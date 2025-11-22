@@ -1,30 +1,23 @@
-// 学祭イベントデータ（仮データ）
 const eventsData = [
   {
-    id: 1,
-    title: "法学部 模擬裁判",
-    university: "中央（市谷田町）",
-    category: "講演・セミナー",
-    field: "法",
-    description: "リアルな模擬裁判を体験できます！"
+    university: "A大学",
+    category: "ステージ",
+    field: "音楽",
+    title: "軽音ライブ",
+    description: "学生バンドによるライブ！"
   },
   {
-    id: 2,
-    title: "IT体験ブース",
-    university: "東京科学（大岡山）",
-    category: "体験・実験",
-    field: "情報",
-    description: "AI・VR・ロボットなど最新技術を展示！"
+    university: "A大学",
+    category: "展示",
+    field: "芸術",
+    title: "美術展示",
+    description: "美術部の作品展示。"
   },
   {
-    id: 3,
-    title: "アカペラサークルライブ",
-    university: "明治（明大前）",
-    category: "音楽・パフォーマンス",
-    field: "文化",
-    description: "明治大の人気アカペラグループが出演！"
+    university: "B大学",
+    category: "模擬店",
+    field: "食品",
+    title: "クレープ屋さん",
+    description: "学生が作るクレープです！"
   }
 ];
-
-// ⭐ お気に入り保存用キー名
-const FAVORITE_KEY = "itlfest_favorites";
