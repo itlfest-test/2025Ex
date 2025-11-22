@@ -157,3 +157,43 @@ button {
   box-shadow: 0 2px #003f7f;
   transform: translateY(2px);
 }
+/* ▼ タブバー全体 ▼ */
+.tab-bar {
+  display: flex;
+  justify-content: space-around;
+  background: #e8f0ff;
+  padding: 10px 0;
+  border-bottom: 2px solid #b5cfff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* ▼ タブボタン ▼ */
+.tab-button {
+  flex: 1;
+  padding: 12px 0;
+  text-align: center;
+  border: none;
+  background: #d0e2ff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* アクティブなタブ */
+.tab-button.active {
+  background: #4a8dff;
+  color: white;
+  font-weight: bold;
+  transform: translateY(-2px);
+}
+
+/* ▼ 画面切り替え ▼ */
+.screen {
+  display: none;
+  padding: 20px;
+}
+.screen.active {
+  display: block;
+}
