@@ -212,7 +212,6 @@ function setupNavigation() {
     });
   });
 }
-
 // ============================
 // ▼ 初回モーダル
 // ============================
@@ -236,7 +235,7 @@ function setupIntroModal() {
 }
 
 // ============================
-// ▼ EVENT_DATA が読み込まれるまで待つ
+// EVENT_DATA が読めるまで待つ
 // ============================
 function waitForEventData(callback) {
   const timer = setInterval(() => {
@@ -248,7 +247,7 @@ function waitForEventData(callback) {
 }
 
 // ============================
-// ▼ セレクトボックスへ options.js の内容を入れる
+// ▼ セレクトボックスへ options を入れる（安全版）
 // ============================
 function loadOptionsSafe() {
   const uni = document.getElementById("university");
