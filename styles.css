@@ -15,7 +15,7 @@ body{
   background:linear-gradient(180deg,#f9fbff 0%,var(--bg) 100%);
   color:#111827;
   -webkit-font-smoothing:antialiased;
-  padding-bottom:90px;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 90px);
 }
 
 /* ---------- HEADER ---------- */
@@ -48,7 +48,6 @@ body{
 .filter-group{margin:10px 0;}
 .filter-title{display:block;font-weight:600;margin-bottom:6px;}
 
-/* セレクト専用（前は flex で壊れてた） */
 select.options{
   width:100%;
   padding:10px;
@@ -59,7 +58,7 @@ select.options{
   appearance:none;
 }
 
-/* ---------- OPTION-BUTTON MODE（※使わなくても安全に残す） ---------- */
+/* ---------- OPTION BUTTON ---------- */
 .option-btn{
   border:none;
   padding:8px 12px;
@@ -78,7 +77,7 @@ select.options{
   box-shadow:0 6px 14px rgba(20,94,168,0.16);
 }
 
-/* ---------- BUTTON ---------- */
+/* ---------- BUTTON ----------- */
 .btn{
   border-radius:10px;
   padding:10px 14px;
@@ -105,11 +104,11 @@ select.options{
 .results-grid{
   display:grid;
   gap:12px;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
   margin-top:12px;
 }
 
-/* ---------- CARD ITEM（result-card に対応） ---------- */
+/* ---------- RESULT CARD ---------- */
 .result-card{
   background:linear-gradient(180deg,#fff,#fbfdff);
   border-radius:10px;
@@ -120,7 +119,6 @@ select.options{
 .result-card h4{margin:0 0 6px;font-size:1rem;}
 .result-card p{margin:0;color:var(--muted);font-size:0.92rem;}
 
-/* favorite star */
 .fav-btn{
   position:absolute;
   top:10px;
@@ -136,10 +134,10 @@ select.options{
 }
 .fav-btn.active{color:#f6c23e;}
 
-/* ---------- BOTTOM NAV（安全版） ---------- */
+/* ---------- BOTTOM NAV ---------- */
 .bottom-nav{
   position:fixed;
-  bottom:14px;
+  bottom:calc(env(safe-area-inset-bottom) + 14px);
   left:0;
   width:100%;
   display:flex;
@@ -165,9 +163,7 @@ select.options{
   border:1px solid rgba(25,118,210,0.08);
 }
 
-.nav-btn span{font-size:0.85rem;}
-
-/* ---------- FAVORITES / HISTORY ---------- */
+/* ---------- HISTORY / FAVORITES ---------- */
 .history-list{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
 .history-item{
   display:flex;
@@ -189,7 +185,7 @@ select.options{
   border-radius:8px;padding:16px;
 }
 
-/* ---------- MODAL ---------- */
+/* ---------- MODAL（統一版） ---------- */
 .modal{
   position:fixed; inset:0;
   display:flex; align-items:center; justify-content:center;
@@ -197,23 +193,36 @@ select.options{
   z-index:200;
   overflow:hidden;
 }
+
 .modal-content{
-  width:min(720px,92%);
+  width:90%;
+  max-width:520px;
+  max-height:80vh;
+  overflow-y:auto;
   background:var(--card);
   border-radius:12px;
-  padding:18px;
-  position:relative;
+  padding:1.6rem 1.4rem;
   box-shadow:0 30px 80px rgba(9,30,66,0.4);
+  position:relative;
 }
+
+.modal-content p{
+  line-height:1.75;
+  font-size:0.95rem;
+}
+
 .modal-close{
-  position:absolute; right:12px; top:10px;
+  position:absolute;
+  right:12px; top:10px;
   border:none; background:transparent;
   font-size:18px; cursor:pointer;
 }
-.modal-body{color:#111827; line-height:1.45;}
+
 .modal-actions{
-  display:flex; gap:12px;
-  align-items:center; justify-content:space-between;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:flex-end;
   margin-top:12px;
 }
 
@@ -225,5 +234,18 @@ select.options{
 @media(max-width:720px){
   .results-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
   .container{padding:0 12px;}
-  .bottom-nav{bottom:10px;}
+  .bottom-nav{bottom:calc(env(safe-area-inset-bottom) + 10px);}
+}
+
+@media(max-width:360px){
+  .modal-content{padding:1.2rem 1rem;}
+  .modal-content p{font-size:0.88rem;}
+}
+
+@media(min-width:768px){
+  .modal-content{
+    max-width:550px;
+    padding:2rem 2rem;
+  }
+  .modal-content p{font-size:1rem;}
 }
