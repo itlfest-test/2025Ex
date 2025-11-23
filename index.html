@@ -31,68 +31,76 @@
   <!-- ============================
        ナビゲーションバー
   ============================ -->
-  <div class="top-nav">
-    <button class="nav-btn active" data-view="search">🔎<br>検索</button>
-    <button class="nav-btn" data-view="favorites">⭐<br>お気に入り</button>
-    <button class="nav-btn" data-view="map">🗺️<br>地図</button>
-  </div>
+  <header>
+    <div class="top-nav">
+      <button class="nav-btn active" data-view="search">🔎<br>検索</button>
+      <button class="nav-btn" data-view="favorites">⭐<br>お気に入り</button>
+      <button class="nav-btn" data-view="map">🗺️<br>地図</button>
+    </div>
+  </header>
 
-  <!-- ============================
-       検索画面
-  ============================ -->
-  <section id="search-area">
-    <h1>学祭イベント検索</h1>
-    <p class="lead">気になる大学・カテゴリ・分野で企画を絞り込もう</p>
+  <!-- ★★★ ここが超重要 → main を追加 ★★★ -->
+  <main>
 
-    <div class="search-box">
-      <label>大学</label>
-      <select id="university"></select>
+    <!-- ============================
+         検索画面
+    ============================ -->
+    <section id="search-area">
+      <h1>学祭イベント検索</h1>
+      <p class="lead">気になる大学・カテゴリ・分野で企画を絞り込もう</p>
 
-      <label>カテゴリ</label>
-      <select id="category"></select>
+      <div class="search-box">
+        <label>大学</label>
+        <select id="university"></select>
 
-      <label>分野</label>
-      <select id="field"></select>
+        <label>カテゴリ</label>
+        <select id="category"></select>
 
-      <div class="search-actions">
-        <button id="searchBtn">検索する</button>
-        <button id="clearBtn" class="reset">リセット</button>
+        <label>分野</label>
+        <select id="field"></select>
+
+        <div class="search-actions">
+          <button id="searchBtn">検索する</button>
+          <button id="clearBtn" class="reset">リセット</button>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================
-       検索結果
-  ============================ -->
-  <section id="results-area">
-    <h2>検索結果</h2>
+    <!-- ============================
+         検索結果
+    ============================ -->
+    <section id="results-area">
+      <h2>検索結果</h2>
 
-    <div id="no-results" hidden>
-      <p>該当する企画がありません。</p>
-    </div>
+      <div id="no-results" hidden>
+        <p>該当する企画がありません。</p>
+      </div>
 
-    <div id="results" class="results-grid"></div>
-  </section>
+      <div id="results" class="results-grid"></div>
+    </section>
 
-  <!-- ============================
-       お気に入り
-  ============================ -->
-  <section id="favorites-area" class="hidden">
-    <h2>お気に入り一覧</h2>
-    <div id="favorites-list" class="results-grid"></div>
+    <!-- ============================
+         お気に入り
+    ============================ -->
+    <section id="favorites-area" class="hidden">
+      <h2>お気に入り一覧</h2>
+      <div id="favorites-list" class="results-grid"></div>
 
-    <h3>最近追加した企画</h3>
-    <div id="fav-history" class="history-list"></div>
-  </section>
+      <h3>最近追加した企画</h3>
+      <div id="fav-history" class="history-list"></div>
+    </section>
 
-  <!-- ============================
-       地図ビュー
-  ============================ -->
-  <section id="map-area" class="hidden">
-    <h2>地図</h2>
-    <p>（地図は今後実装予定）</p>
-    <div class="map-placeholder">MAP</div>
-  </section>
+    <!-- ============================
+         地図ビュー
+    ============================ -->
+    <section id="map-area" class="hidden">
+      <h2>地図</h2>
+      <p>（地図は今後実装予定）</p>
+      <div class="map-placeholder">MAP</div>
+    </section>
+
+  </main>
+  <!-- ★★★ main 終わり ★★★ -->
 
   <!-- ============================
        JS 読み込み順（重要）
