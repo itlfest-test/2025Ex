@@ -72,26 +72,30 @@
     <div class="map-placeholder">地図は準備中...</div>
   </section>
 
-  <!-- 初回メッセージモーダル（完全復元版） -->
-  <div id="introModal" class="modal hidden">
-    <div class="modal-content">
-      <button class="modal-close" id="introClose">✕</button>
-      <h3>iTL Fest. 広報部からのメッセージ</h3>
+<!-- 初回メッセージモーダル（完全レスポンシブ対応） -->
+<div id="introModal" class="modal hidden">
+  <div class="modal-content intro-modal-content">
+    <button class="modal-close" id="introClose">✕</button>
+    <h3>iTL Fest. 広報部からのメッセージ</h3>
 
-      <div class="modal-body">
-        <p>
-          このサイトは、学園祭の主なターゲットである受験生の皆さんのために制作されました。<br>
-          都内の学祭出し物を集め、興味のある学校・分野を見つけやすくしました。<br>
-          <small>2025 iTL Fest. 広報部</small>
-        </p>
-      </div>
+    <div class="modal-body">
+      <p>
+        このサイトは、学園祭の主なターゲットである受験生の皆さんのために制作されました。<br><br>
+        自分の手で興味のある学校、学部、学科を調べ出すのは困難であり、概要を見ても難解で、具体的に
+        <strong>「何ができるところなのか」いまいち掴めない</strong>ことも多いと思います。<br><br>
+        そこで、ハイレベルな大学群がひしめく都内様々な大学の学祭の出し物を集め、皆さんが実際に大学に赴き、企画を体験することで、入学後のより具体的なイメージを持てると思い、このサイトを制作しました。<br><br>
+        是非、少しでも興味がある学祭に一度足を運び、参考にしてみて下さい。<br><br>
+        <small>2025 iTL Fest. 広報部</small>
+      </p>
+    </div>
 
-      <div class="modal-actions">
-        <label><input type="checkbox" id="dontShow"> 次から表示しない</label>
-        <button id="introOk" class="btn primary-3d">閉じる</button>
-      </div>
+    <div class="modal-actions">
+      <label><input type="checkbox" id="dontShow"> 次から表示しない</label>
+      <button id="introOk" class="btn primary-3d">閉じる</button>
     </div>
   </div>
+</div>
+
 
   <!-- JS読み込み -->
   <script src="options.js" defer></script>
