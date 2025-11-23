@@ -5,8 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ▼ まず options（検索フォームの候補）だけロード
   loadOptionsSafe();
 
-  // ▼ favorites や history は「EVENT_DATA の読み込みが完了してから」
-  // data.js が読み込まれるまで少し待つ
+  // ▼ favorites や history は EVENT_DATA の読み込み後
   waitForEventData(() => {
     loadFavorites();
     loadHistory();
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupNavigation();
   setupIntroModal();
 });
-
 
 // ============================
 // データ保存用
@@ -63,10 +61,7 @@ function renderResults(list) {
   }
 
   noData.hidden = true;
-
-  list.forEach(ev => {
-    area.appendChild(createEventCard(ev));
-  });
+  list.forEach(ev => area.appendChild(createEventCard(ev)));
 }
 
 // ============================
@@ -82,7 +77,6 @@ function createEventCard(ev) {
   card.innerHTML = `
     <h4>${ev.title}</h4>
     <p class="muted">${ev.university} / ${ev.category} / ${ev.field}</p>
-
     <div class="card-actions">
       <button class="fav-btn ${isFav ? "active" : ""}" data-id="${ev.id}">
         ⭐
@@ -90,9 +84,7 @@ function createEventCard(ev) {
     </div>
   `;
 
-  // ★ お気に入り切り替え
   card.querySelector(".fav-btn").addEventListener("click", () => toggleFavorite(ev));
-
   return card;
 }
 
@@ -104,25 +96,18 @@ function toggleFavorite(ev) {
   let history = loadHistoryArray();
 
   if (favs.includes(ev.id)) {
-    // --- お気に入り解除 ---
     favs = favs.filter(id => id !== ev.id);
-
-    // 履歴には「お気に入り解除しても残す」 → 追加はしない
   } else {
-    // --- お気に入り追加 ---
     favs.push(ev.id);
-
-    // 履歴記録（重複は最新へ移動）
     history = addToHistory(ev.id, history);
   }
 
-  // 保存
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 
   renderFavorites();
   renderHistory();
-  renderResults(EVENT_DATA); // 状態更新
+  renderResults(EVENT_DATA);
 }
 
 // ============================
@@ -142,16 +127,10 @@ function renderFavorites() {
 // ▼ 履歴処理
 // ============================
 function addToHistory(id, history) {
-  // すでにある → 削除して先頭に入れ直す
   history = history.filter(h => h !== id);
-
-  // 先頭へ
   history.unshift(id);
 
-  // 15件上限
-  if (history.length > HISTORY_MAX) {
-    history = history.slice(0, HISTORY_MAX);
-  }
+  if (history.length > HISTORY_MAX) history = history.slice(0, HISTORY_MAX);
 
   return history;
 }
@@ -173,7 +152,6 @@ function renderHistory() {
       <button class="delete-history" data-id="${id}">🗑️</button>
     `;
 
-    // 履歴個別削除（お気に入りには影響なし）
     item.querySelector(".delete-history").addEventListener("click", () => {
       const newHistory = history.filter(h => h !== id);
       localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
@@ -255,7 +233,11 @@ function setupIntroModal() {
       localStorage.setItem("hideIntro", "1");
     }
   }
-  // EVENT_DATA が読めるまで待つ
+}
+
+// ============================
+// ▼ EVENT_DATA が読み込まれるまで待つ
+// ============================
 function waitForEventData(callback) {
   const timer = setInterval(() => {
     if (typeof EVENT_DATA !== "undefined") {
@@ -265,13 +247,14 @@ function waitForEventData(callback) {
   }, 30);
 }
 
-// ▼ セレクトボックスへ options.js の内容を入れる（安全版）
+// ============================
+// ▼ セレクトボックスへ options.js の内容を入れる
+// ============================
 function loadOptionsSafe() {
   const uni = document.getElementById("university");
   const cat = document.getElementById("category");
   const field = document.getElementById("field");
 
-  // 空の option（指定なし）
   const createOption = (v) => {
     const opt = document.createElement("option");
     opt.value = v;
@@ -290,6 +273,4 @@ function loadOptionsSafe() {
   // 分野
   field.appendChild(createOption(""));
   fieldOptions.forEach(f => field.appendChild(createOption(f)));
-}
-
 }
