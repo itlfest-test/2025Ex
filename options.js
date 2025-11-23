@@ -1,4 +1,7 @@
-const UNIVERSITIES = [
+// options.js
+
+// ▼▼ search.js が要求する形式に合わせた配列 ▼▼
+const universityOptions = [
   "中央（市谷田町）",
   "中央（後楽園）",
   "中央（茗荷谷）",
@@ -17,7 +20,7 @@ const UNIVERSITIES = [
   "武蔵野美術（鷹の台）"
 ];
 
-const CATEGORIES = [
+const categoryOptions = [
   "エンタメ・お笑い",
   "講演・セミナー",
   "音楽・パフォーマンス",
@@ -29,14 +32,15 @@ const CATEGORIES = [
   "その他"
 ];
 
-const FIELDS = [
-  { key: "法", label: "法", desc: "法学系（模擬裁判など）" },
-  { key: "情報", label: "情報", desc: "情報・コンピュータ系（展示・実験）" },
-  { key: "理工", label: "理工", desc: "理工系（実験・研究紹介）" },
-  { key: "社会", label: "社会", desc: "社会系（討論・展示など）" },
-  { key: "デザイン", label: "デザイン", desc: "デザイン系（展示・ワークショップ）" },
-  { key: "芸術", label: "芸術", desc: "美術・音楽など表現全般" },
-  { key: "文化", label: "文化", desc: "文化系の企画（伝統芸能など）" },
-  { key: "医科歯科", label: "医科歯科", desc: "医学・歯学系の企画" },
-  { key: "その他", label: "その他", desc: "その他の分野" }
+// FIELDS は key じゃなく “文字列” を使う（search.js と合わせる）
+const fieldOptions = [
+  "法",
+  "情報",
+  "理工",
+  "社会",
+  "デザイン",
+  "芸術",
+  "文化",
+  "医科歯科",
+  "その他"
 ];
