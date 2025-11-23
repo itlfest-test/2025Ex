@@ -1,160 +1,315 @@
 // ============================
-// 初期ロード
+// script.js - complete replacement
 // ============================
-document.addEventListener("DOMContentLoaded", () => {
-  // ▼ まず options（検索フォームの候補）だけロード
-  loadOptionsSafe();
 
-  // ▼ favorites や history は EVENT_DATA の読み込み後
-  waitForEventData(() => {
-    loadFavorites();
-    loadHistory();
-  });
-
-  setupNavigation();
-  setupIntroModal();
-});
-
-// ============================
-// データ保存用
-// ============================
+// --- constants / keys
 const FAVORITES_KEY = "favorites";
 const HISTORY_KEY = "favorite_history";
 const HISTORY_MAX = 15;
 
-// ============================
-// ▼ 検索処理
-// ============================
-document.getElementById("searchBtn").addEventListener("click", () => {
-  const uni = document.getElementById("university").value;
-  const cat = document.getElementById("category").value;
-  const field = document.getElementById("field").value;
+// --- helper: unified data accessor
+function getAllEvents() {
+  // support both EVENT_DATA and events variable names
+  const raw = window.EVENT_DATA || window.events || [];
+  // ensure it's an array
+  return Array.isArray(raw) ? raw : [];
+}
 
-  const filtered = EVENT_DATA.filter(ev => {
-    return (!uni || ev.university === uni) &&
-           (!cat || ev.category === cat) &&
-           (!field || ev.field === field);
+// normalize accessors (works for Japanese-keyed data or english-keyed)
+function evTitle(ev) {
+  return ev['企画名'] || ev.title || ev.name || "(無題)";
+}
+function evUniversity(ev) {
+  return ev['大学'] || ev.university || "";
+}
+function evCategory(ev) {
+  return ev['カテゴリ'] || ev.category || "";
+}
+function evField(ev) {
+  return ev['分野'] || ev.field || "";
+}
+function evExcerpt(ev) {
+  return (ev['説明'] || ev.description || '').slice(0, 140);
+}
+function evDateTime(ev) {
+  return ev['start_datetime'] || ev.start_datetime || '';
+}
+function evPlace(ev) {
+  return ev['場所'] || ev.location || '';
+}
+
+// ============================
+// 初期ロード
+// ============================
+document.addEventListener("DOMContentLoaded", () => {
+  // populate selects (options.js should provide universityOptions/categoryOptions/fieldOptions)
+  try { loadOptionsSafe(); } catch(e){ console.warn("loadOptionsSafe error:", e); }
+
+  // navigation and modal do not need EVENT_DATA; set them up immediately
+  try { setupNavigation(); } catch(e){ console.warn("setupNavigation error:", e); }
+  try { setupIntroModal(); } catch(e){ console.warn("setupIntroModal error:", e); }
+
+  // wait for events data, then load favorites/history and initial rendering
+  waitForEventData(() => {
+    renderResults(getAllEvents());
+    loadFavorites();
+    loadHistory();
+  });
+
+  // bind search/clear (safe-guard if elements missing)
+  const sBtn = document.getElementById("searchBtn");
+  const cBtn = document.getElementById("clearBtn");
+  if(sBtn) sBtn.addEventListener("click", onSearch);
+  if(cBtn) cBtn.addEventListener("click", onClear);
+});
+
+// ============================
+// EVENT_DATA が読めるまで待つ (supports either events or EVENT_DATA)
+// ============================
+function waitForEventData(callback) {
+  // if already present, call immediately
+  if (typeof window.EVENT_DATA !== "undefined" || typeof window.events !== "undefined") {
+    callback();
+    return;
+  }
+  const timer = setInterval(() => {
+    if (typeof window.EVENT_DATA !== "undefined" || typeof window.events !== "undefined") {
+      clearInterval(timer);
+      callback();
+    }
+  }, 50);
+}
+
+// ============================
+// 検索処理
+// ============================
+function onSearch() {
+  const uni = (document.getElementById("university") || {}).value || "";
+  const cat = (document.getElementById("category") || {}).value || "";
+  const field = (document.getElementById("field") || {}).value || "";
+
+  const all = getAllEvents();
+  const filtered = all.filter(ev => {
+    if (uni && evUniversity(ev) !== uni) return false;
+    if (cat && evCategory(ev) !== cat) return false;
+    if (field && evField(ev) !== field) return false;
+    return true;
   });
 
   renderResults(filtered);
-});
+}
 
-document.getElementById("clearBtn").addEventListener("click", () => {
-  document.getElementById("university").value = "";
-  document.getElementById("category").value = "";
-  document.getElementById("field").value = "";
-  renderResults([]);
-});
+function onClear() {
+  const uniEl = document.getElementById("university");
+  const catEl = document.getElementById("category");
+  const fieldEl = document.getElementById("field");
+  if (uniEl) uniEl.value = "";
+  if (catEl) catEl.value = "";
+  if (fieldEl) fieldEl.value = "";
+  renderResults(getAllEvents());
+}
 
 // ============================
-// ▼ 結果表示
+// 結果表示
 // ============================
 function renderResults(list) {
   const area = document.getElementById("results");
   const noData = document.getElementById("no-results");
+  if(!area) return;
 
   area.innerHTML = "";
 
-  if (list.length === 0) {
-    noData.hidden = false;
+  if (!Array.isArray(list) || list.length === 0) {
+    if(noData) noData.hidden = false;
     return;
   }
+  if(noData) noData.hidden = true;
 
-  noData.hidden = true;
   list.forEach(ev => area.appendChild(createEventCard(ev)));
 }
 
 // ============================
-// ▼ カード生成（共通）
+// カード生成（共通）
 // ============================
 function createEventCard(ev) {
-  const card = document.createElement("div");
+  const card = document.createElement("article");
   card.className = "result-card";
 
   const favs = loadFavoritesArray();
   const isFav = favs.includes(ev.id);
 
+  // build inner HTML using normalized accessors
   card.innerHTML = `
-    <h4>${ev.title}</h4>
-    <p class="muted">${ev.university} / ${ev.category} / ${ev.field}</p>
-    <div class="card-actions">
-      <button class="fav-btn ${isFav ? "active" : ""}" data-id="${ev.id}">
-        ⭐
-      </button>
+    <button class="fav-btn ${isFav ? "active" : ""}" data-id="${ev.id}" aria-label="お気に入り">
+      ⭐
+    </button>
+    <h4>${escapeHtml(evTitle(ev))}</h4>
+    <p class="muted">${escapeHtml(evExcerpt(ev))}</p>
+    <div class="card-meta">
+      ${escapeHtml(evUniversity(ev))} / ${escapeHtml(evCategory(ev))} / ${escapeHtml(evField(ev))}<br>
+      ${escapeHtml(evDateTime(ev))} ${escapeHtml(evPlace(ev))}
     </div>
   `;
 
-  card.querySelector(".fav-btn").addEventListener("click", () => toggleFavorite(ev));
+  // bind favorite toggle
+  const btn = card.querySelector(".fav-btn");
+  if(btn){
+    btn.addEventListener("click", () => toggleFavorite(ev));
+  }
+
   return card;
 }
 
+// small utility to avoid inserting raw HTML from data
+function escapeHtml(str) {
+  if(!str && str !== 0) return "";
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 // ============================
-// ▼ お気に入り操作
+// お気に入り操作 (ids array)
 // ============================
+function loadFavoritesArray() {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
+  } catch (e) { return []; }
+}
+
+function loadHistoryArray() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  } catch (e) { return []; }
+}
+
+function saveFavoritesArray(arr) {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(arr));
+}
+function saveHistoryArray(arr) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+}
+
 function toggleFavorite(ev) {
+  const id = ev.id;
+  if(typeof id === "undefined") return;
+
   let favs = loadFavoritesArray();
   let history = loadHistoryArray();
 
-  if (favs.includes(ev.id)) {
-    favs = favs.filter(id => id !== ev.id);
+  if (favs.includes(id)) {
+    // remove
+    favs = favs.filter(x => x !== id);
   } else {
-    favs.push(ev.id);
-    history = addToHistory(ev.id, history);
+    // add to top
+    favs.unshift(id);
+    // add to history (move to top)
+    history = addToHistory(id, history);
   }
 
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  // persist
+  saveFavoritesArray(favs);
+  saveHistoryArray(history);
 
+  // refresh UIs
   renderFavorites();
   renderHistory();
-  renderResults(EVENT_DATA);
+  // refresh results area to update star UI
+  // If results currently filtered, re-render them based on current selects
+  const uni = (document.getElementById("university") || {}).value || "";
+  const cat = (document.getElementById("category") || {}).value || "";
+  const field = (document.getElementById("field") || {}).value || "";
+  if (uni || cat || field) {
+    onSearch();
+  } else {
+    renderResults(getAllEvents());
+  }
 }
 
 // ============================
-// ▼ お気に入り表示
+// お気に入り表示
 // ============================
 function renderFavorites() {
   const list = document.getElementById("favorites-list");
+  if(!list) return;
   list.innerHTML = "";
 
   const favs = loadFavoritesArray();
-  const events = EVENT_DATA.filter(ev => favs.includes(ev.id));
+  if(favs.length === 0) {
+    list.innerHTML = '<div class="muted">お気に入りはまだありません。</div>';
+    return;
+  }
 
-  events.forEach(ev => list.appendChild(createEventCard(ev)));
+  const all = getAllEvents();
+  // keep original order of favs (most-recent first)
+  favs.forEach(id => {
+    const ev = all.find(x => x.id === id);
+    if(ev) list.appendChild(createEventCard(ev));
+  });
 }
 
 // ============================
-// ▼ 履歴処理
+// 履歴処理
 // ============================
 function addToHistory(id, history) {
-  history = history.filter(h => h !== id);
-  history.unshift(id);
-
-  if (history.length > HISTORY_MAX) history = history.slice(0, HISTORY_MAX);
-
-  return history;
+  let h = Array.isArray(history) ? history.slice() : loadHistoryArray();
+  // remove existing
+  h = h.filter(x => x !== id);
+  // add to top
+  h.unshift(id);
+  if (h.length > HISTORY_MAX) h = h.slice(0, HISTORY_MAX);
+  return h;
 }
 
 function renderHistory() {
   const area = document.getElementById("fav-history");
+  if(!area) return;
   area.innerHTML = "";
 
   const history = loadHistoryArray();
+  if (history.length === 0) {
+    area.innerHTML = '<div class="muted">履歴はありません。</div>';
+    return;
+  }
 
+  const all = getAllEvents();
   history.forEach(id => {
-    const ev = EVENT_DATA.find(e => e.id === id);
+    const ev = all.find(e => e.id === id);
     if (!ev) return;
-
     const item = document.createElement("div");
     item.className = "history-item";
     item.innerHTML = `
-      <span>${ev.title}</span>
-      <button class="delete-history" data-id="${id}">🗑️</button>
+      <div>
+        <strong>${escapeHtml(evTitle(ev))}</strong>
+        <div class="muted">${escapeHtml(evUniversity(ev))}</div>
+      </div>
+      <div class="history-actions">
+        <button class="btn small readd" data-id="${id}">再登録</button>
+        <button class="btn small del" data-id="${id}">🗑️</button>
+      </div>
     `;
 
-    item.querySelector(".delete-history").addEventListener("click", () => {
-      const newHistory = history.filter(h => h !== id);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
+    // re-add (move to top of favorites if not present)
+    const readdBtn = item.querySelector(".readd");
+    readdBtn.addEventListener("click", () => {
+      const favs = loadFavoritesArray();
+      if (!favs.find(x => x === id)) {
+        favs.unshift(id);
+        saveFavoritesArray(favs);
+      }
+      renderFavorites();
+      renderHistory();
+    });
+
+    // delete from history only
+    const delBtn = item.querySelector(".del");
+    delBtn.addEventListener("click", () => {
+      let h = loadHistoryArray();
+      h = h.filter(x => x !== id);
+      saveHistoryArray(h);
       renderHistory();
     });
 
@@ -163,113 +318,56 @@ function renderHistory() {
 }
 
 // ============================
-// ▼ LocalStorage helper
-// ============================
-function loadFavoritesArray() {
-  return JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
-}
-
-function loadHistoryArray() {
-  return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-}
-
-function loadFavorites() {
-  renderFavorites();
-}
-
-function loadHistory() {
-  renderHistory();
-}
-
-// ============================
-// ▼ ページ切り替え
+// ページ切り替え（タブ）
 // ============================
 function setupNavigation() {
   const buttons = document.querySelectorAll(".nav-btn");
+  if (!buttons) return;
 
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       buttons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-
       const view = btn.dataset.view;
 
-      document.getElementById("search-area").classList.add("hidden");
-      document.getElementById("results-area").classList.add("hidden");
-      document.getElementById("favorites-area").classList.add("hidden");
-      document.getElementById("map-area").classList.add("hidden");
+      // hide all
+      const searchArea = document.getElementById("search-area");
+      const resultsArea = document.getElementById("results-area");
+      const favoritesArea = document.getElementById("favorites-area");
+      const mapArea = document.getElementById("map-area");
 
-      if (view === "search") {
-        document.getElementById("search-area").classList.remove("hidden");
-        document.getElementById("results-area").classList.remove("hidden");
-      } else if (view === "favorites") {
+      if (searchArea) searchArea.classList.toggle("hidden", view !== "search");
+      if (resultsArea) resultsArea.classList.toggle("hidden", view !== "search");
+      if (favoritesArea) favoritesArea.classList.toggle("hidden", view !== "favorites");
+      if (mapArea) mapArea.classList.toggle("hidden", view !== "map");
+
+      if (view === "favorites") {
         renderFavorites();
         renderHistory();
-        document.getElementById("favorites-area").classList.remove("hidden");
-      } else if (view === "map") {
-        document.getElementById("map-area").classList.remove("hidden");
       }
     });
   });
 }
+
 // ============================
-// ▼ 初回モーダル
+// 初回モーダル
 // ============================
 function setupIntroModal() {
   const modal = document.getElementById("introModal");
   const dontShow = document.getElementById("dontShow");
+  const closeBtns = [document.getElementById("introClose"), document.getElementById("introOk")];
 
-  if (!localStorage.getItem("hideIntro")) {
-    modal.classList.remove("hidden");
+  // show only if not hidden
+  if (!localStorage.getItem("hideIntro") && modal) {
+    // slight delay so user sees layout before modal overlay
+    setTimeout(() => modal.classList.remove("hidden"), 280);
   }
 
-  document.getElementById("introClose").addEventListener("click", close);
-  document.getElementById("introOk").addEventListener("click", close);
-
-  function close() {
-    modal.classList.add("hidden");
-    if (dontShow.checked) {
-      localStorage.setItem("hideIntro", "1");
-    }
-  }
-}
-
-// ============================
-// EVENT_DATA が読めるまで待つ
-// ============================
-function waitForEventData(callback) {
-  const timer = setInterval(() => {
-    if (typeof EVENT_DATA !== "undefined") {
-      clearInterval(timer);
-      callback();
-    }
-  }, 30);
-}
-
-// ============================
-// ▼ セレクトボックスへ options を入れる（安全版）
-// ============================
-function loadOptionsSafe() {
-  const uni = document.getElementById("university");
-  const cat = document.getElementById("category");
-  const field = document.getElementById("field");
-
-  const createOption = (v) => {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v || "指定なし";
-    return opt;
-  };
-
-  // 大学
-  uni.appendChild(createOption(""));
-  universityOptions.forEach(u => uni.appendChild(createOption(u)));
-
-  // カテゴリ
-  cat.appendChild(createOption(""));
-  categoryOptions.forEach(c => cat.appendChild(createOption(c)));
-
-  // 分野
-  field.appendChild(createOption(""));
-  fieldOptions.forEach(f => field.appendChild(createOption(f)));
+  closeBtns.forEach(btn => {
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      if (dontShow && dontShow.checked) localStorage.setItem("hideIntro", "1");
+      if(modal) modal.classList.add("hidden");
+    });
+  });
 }
