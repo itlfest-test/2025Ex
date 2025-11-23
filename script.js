@@ -255,4 +255,41 @@ function setupIntroModal() {
       localStorage.setItem("hideIntro", "1");
     }
   }
+  // EVENT_DATA が読めるまで待つ
+function waitForEventData(callback) {
+  const timer = setInterval(() => {
+    if (typeof EVENT_DATA !== "undefined") {
+      clearInterval(timer);
+      callback();
+    }
+  }, 30);
+}
+
+// ▼ セレクトボックスへ options.js の内容を入れる（安全版）
+function loadOptionsSafe() {
+  const uni = document.getElementById("university");
+  const cat = document.getElementById("category");
+  const field = document.getElementById("field");
+
+  // 空の option（指定なし）
+  const createOption = (v) => {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v || "指定なし";
+    return opt;
+  };
+
+  // 大学
+  uni.appendChild(createOption(""));
+  universityOptions.forEach(u => uni.appendChild(createOption(u)));
+
+  // カテゴリ
+  cat.appendChild(createOption(""));
+  categoryOptions.forEach(c => cat.appendChild(createOption(c)));
+
+  // 分野
+  field.appendChild(createOption(""));
+  fieldOptions.forEach(f => field.appendChild(createOption(f)));
+}
+
 }
