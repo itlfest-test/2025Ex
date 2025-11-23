@@ -2,10 +2,8 @@
 // 初期ロード
 // ============================
 document.addEventListener("DOMContentLoaded", () => {
-  // ▼ まず options（検索フォームの候補）だけロード
   loadOptionsSafe();
 
-  // ▼ favorites や history は「EVENT_DATA の読み込みが完了してから」
   waitForEventData(() => {
     loadFavorites();
     loadHistory();
@@ -63,7 +61,7 @@ function renderResults(list) {
   noData.hidden = true;
 
   list.forEach(ev => {
-    area.appendChild(createEventCard(ev)));
+    area.appendChild(createEventCard(ev));  // ← 修正済み（カッコ1個）
   });
 }
 
