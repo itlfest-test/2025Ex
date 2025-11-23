@@ -2,11 +2,13 @@
 // 初期ロード
 // ============================
 document.addEventListener("DOMContentLoaded", () => {
+  // loadOptions(); ← これはもう不要！削除
   loadFavorites();
   loadHistory();
   setupNavigation();
   setupIntroModal();
 });
+
 
 // ============================
 // データ保存用
