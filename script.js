@@ -2,9 +2,16 @@
 // 初期ロード
 // ============================
 document.addEventListener("DOMContentLoaded", () => {
-  // loadOptions(); ← これはもう不要！削除
-  loadFavorites();
-  loadHistory();
+  // ▼ まず options（検索フォームの候補）だけロード
+  loadOptionsSafe();
+
+  // ▼ favorites や history は「EVENT_DATA の読み込みが完了してから」
+  // data.js が読み込まれるまで少し待つ
+  waitForEventData(() => {
+    loadFavorites();
+    loadHistory();
+  });
+
   setupNavigation();
   setupIntroModal();
 });
