@@ -6,6 +6,7 @@
   <title>学祭イベント検索</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <header class="site-header">
     <h1>学祭イベント検索</h1>
@@ -14,7 +15,9 @@
 
   <main class="container">
 
-    <!-- 検索エリア -->
+    <!-- ========================= -->
+    <!-- 🔍 検索エリア -->
+    <!-- ========================= -->
     <section id="search-area" class="card">
       <h2>検索条件</h2>
 
@@ -39,67 +42,77 @@
       </div>
     </section>
 
-    <!-- 検索結果 -->
+    <!-- ========================= -->
+    <!-- 📄 検索結果 -->
+    <!-- ========================= -->
     <section id="results-area" class="card">
       <h2>検索結果</h2>
       <div id="results" class="results-grid"></div>
       <div id="no-results" class="muted" hidden>該当する企画がありません。</div>
     </section>
 
+    <!-- ========================= -->
+    <!-- ⭐ お気に入り -->
+    <!-- ========================= -->
+    <section id="favorites-area" class="card hidden">
+      <h2>お気に入り</h2>
+      <div id="favorites-list" class="results-grid"></div>
+
+      <div class="history-area">
+        <h3>過去の登録（履歴）</h3>
+        <div id="fav-history" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- ========================= -->
+    <!-- 🗺 地図 -->
+    <!-- ========================= -->
+    <section id="map-area" class="card hidden">
+      <h2>地図</h2>
+      <div class="map-placeholder">地図は準備中...</div>
+    </section>
+
   </main>
 
-  <!-- 下部ナビゲーション -->
+  <!-- ========================= -->
+  <!-- 📌 下部ナビゲーション -->
+  <!-- ========================= -->
   <nav class="bottom-nav">
     <button class="nav-btn active" data-view="search">🔎<span>検索</span></button>
     <button class="nav-btn" data-view="favorites">⭐<span>お気に入り</span></button>
     <button class="nav-btn" data-view="map">🗺️<span>地図</span></button>
   </nav>
 
-  <!-- お気に入り -->
-  <section id="favorites-area" class="card hidden">
-    <h2>お気に入り</h2>
-    <div id="favorites-list" class="results-grid"></div>
+  <!-- ========================= -->
+  <!-- 📝 初回メッセージモーダル -->
+  <!-- ========================= -->
+  <div id="introModal" class="modal hidden">
+    <div class="modal-content intro-modal-content">
+      <button class="modal-close" id="introClose">✕</button>
+      <h3>iTL Fest. 広報部からのメッセージ</h3>
 
-    <div class="history-area">
-      <h3>過去の登録（履歴）</h3>
-      <div id="fav-history" class="history-list"></div>
-    </div>
-  </section>
+      <div class="modal-body">
+        <p>
+          このサイトは、学園祭の主なターゲットである受験生の皆さんのために制作されました。<br><br>
+          自分の手で興味のある学校、学部、学科を調べ出すのは困難であり、概要を見ても難解で、具体的に
+          <strong>「何ができるところなのか」いまいち掴めない</strong>ことも多いと思います。<br><br>
+          そこで、ハイレベルな大学群がひしめく都内様々な大学の学祭の出し物を集め、皆さんが実際に大学に赴き、企画を体験することで、入学後のより具体的なイメージを持てると思い、このサイトを制作しました。<br><br>
+          是非、少しでも興味がある学祭に一度足を運び、参考にしてみて下さい。<br><br>
+          <small>2025 iTL Fest. 広報部</small>
+        </p>
+      </div>
 
-  <!-- 地図 -->
-  <section id="map-area" class="card hidden">
-    <h2>地図</h2>
-    <div class="map-placeholder">地図は準備中...</div>
-  </section>
-
-<!-- 初回メッセージモーダル（完全レスポンシブ対応） -->
-<div id="introModal" class="modal hidden">
-  <div class="modal-content intro-modal-content">
-    <button class="modal-close" id="introClose">✕</button>
-    <h3>iTL Fest. 広報部からのメッセージ</h3>
-
-    <div class="modal-body">
-      <p>
-        このサイトは、学園祭の主なターゲットである受験生の皆さんのために制作されました。<br><br>
-        自分の手で興味のある学校、学部、学科を調べ出すのは困難であり、概要を見ても難解で、具体的に
-        <strong>「何ができるところなのか」いまいち掴めない</strong>ことも多いと思います。<br><br>
-        そこで、ハイレベルな大学群がひしめく都内様々な大学の学祭の出し物を集め、皆さんが実際に大学に赴き、企画を体験することで、入学後のより具体的なイメージを持てると思い、このサイトを制作しました。<br><br>
-        是非、少しでも興味がある学祭に一度足を運び、参考にしてみて下さい。<br><br>
-        <small>2025 iTL Fest. 広報部</small>
-      </p>
-    </div>
-
-    <div class="modal-actions">
-      <label><input type="checkbox" id="dontShow"> 次から表示しない</label>
-      <button id="introOk" class="btn primary-3d">閉じる</button>
+      <div class="modal-actions">
+        <label><input type="checkbox" id="dontShow"> 次から表示しない</label>
+        <button id="introOk" class="btn primary-3d">閉じる</button>
+      </div>
     </div>
   </div>
-</div>
-
 
   <!-- JS読み込み -->
   <script src="options.js" defer></script>
   <script src="data.js" defer></script>
   <script src="script.js" defer></script>
+
 </body>
 </html>
