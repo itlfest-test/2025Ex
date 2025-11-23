@@ -2,7 +2,6 @@
 // 初期ロード
 // ============================
 document.addEventListener("DOMContentLoaded", () => {
-  loadOptions();
   loadFavorites();
   loadHistory();
   setupNavigation();
