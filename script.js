@@ -1,5 +1,5 @@
 // ============================
-// script.js - complete replacement (FULL WORKING VERSION)
+// script.js - 修正版（日時表示とお気に入り改善）
 // ============================
 
 // --- constants / keys
@@ -29,11 +29,47 @@ function evField(ev) {
 function evExcerpt(ev) {
   return (ev["説明"] || ev.description || "").slice(0, 140);
 }
-function evDateTime(ev) {
+function evStartDateTime(ev) {
   return ev["start_datetime"] || ev.start_datetime || "";
+}
+function evEndDateTime(ev) {
+  return ev["end_datetime"] || ev.end_datetime || "";
 }
 function evPlace(ev) {
   return ev["場所"] || ev.location || "";
+}
+
+// ============================
+// 📅 日時を人間が読みやすい形式に変換
+// ============================
+function formatDateTime(startStr, endStr) {
+  if (!startStr) return "";
+  
+  try {
+    const start = new Date(startStr);
+    const end = endStr ? new Date(endStr) : null;
+    
+    const year = start.getFullYear();
+    const month = start.getMonth() + 1;
+    const day = start.getDate();
+    const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+    const weekday = weekdays[start.getDay()];
+    
+    const startHour = String(start.getHours()).padStart(2, '0');
+    const startMin = String(start.getMinutes()).padStart(2, '0');
+    
+    let result = `${year}年${month}月${day}日（${weekday}） ${startHour}:${startMin}`;
+    
+    if (end) {
+      const endHour = String(end.getHours()).padStart(2, '0');
+      const endMin = String(end.getMinutes()).padStart(2, '0');
+      result += `～${endHour}:${endMin}`;
+    }
+    
+    return result;
+  } catch (e) {
+    return startStr; // エラーの場合は元の文字列を返す
+  }
 }
 
 // ============================
@@ -148,6 +184,10 @@ function createEventCard(ev) {
 
   const favs = loadFavoritesArray();
   const isFav = favs.includes(ev.id);
+  
+  // 日時を読みやすい形式に変換
+  const dateTimeStr = formatDateTime(evStartDateTime(ev), evEndDateTime(ev));
+  const placeStr = evPlace(ev);
 
   card.innerHTML = `
     <button class="fav-btn ${isFav ? "active" : ""}" data-id="${ev.id}" aria-label="お気に入り">
@@ -157,7 +197,7 @@ function createEventCard(ev) {
     <p class="muted">${escapeHtml(evExcerpt(ev))}</p>
     <div class="card-meta">
       ${escapeHtml(evUniversity(ev))} / ${escapeHtml(evCategory(ev))} / ${escapeHtml(evField(ev))}<br>
-      ${escapeHtml(evDateTime(ev))} ${escapeHtml(evPlace(ev))}
+      ${escapeHtml(dateTimeStr)}${placeStr ? ' @ ' + escapeHtml(placeStr) : ''}
     </div>
   `;
 
@@ -423,4 +463,3 @@ function loadOptionsSafe() {
   } catch (e) {
     console.error("loadOptionsSafe failed:", e);
   }
-}
