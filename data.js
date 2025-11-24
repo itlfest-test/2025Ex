@@ -1489,3 +1489,6 @@ const events = [
     "場所": "各ゼミによって異なります"
   }
 ];
+// data.jsの最後に追加
+window.EVENT_DATA = events;
+window.events = events;
