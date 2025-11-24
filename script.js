@@ -463,3 +463,4 @@ function loadOptionsSafe() {
   } catch (e) {
     console.error("loadOptionsSafe failed:", e);
   }
+}
