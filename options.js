@@ -1,6 +1,6 @@
-// options.js
+// options.js - 修正版
+// data.jsのデータと完全一致するように修正
 
-// ▼▼ search.js が要求する形式に合わせた配列 ▼▼
 const universityOptions = [
   "中央（市谷田町）",
   "中央（後楽園）",
@@ -17,7 +17,7 @@ const universityOptions = [
   "早稲田（文）",
   "東京科学（湯島）",
   "東京科学（大岡山）",
-  "武蔵野美術（鷹の台）"
+  "武蔵野美術（市ヶ谷）"  // ← 鷹の台から市ヶ谷に修正
 ];
 
 const categoryOptions = [
@@ -28,19 +28,21 @@ const categoryOptions = [
   "体験・実験",
   "飲食",
   "物販",
-  "プレゼント企画",
-  "その他"
+  "その他"  // プレゼント企画は削除（data.jsに存在しない）
 ];
 
-// FIELDS は key じゃなく “文字列” を使う（search.js と合わせる）
 const fieldOptions = [
   "法",
-  "情報",
   "理工",
+  "理工学",  // data.jsに「理工学」が存在
   "社会",
-  "デザイン",
   "芸術",
   "文化",
   "医科歯科",
   "その他"
 ];
+
+// グローバルに公開
+window.universityOptions = universityOptions;
+window.categoryOptions = categoryOptions;
+window.fieldOptions = fieldOptions;
