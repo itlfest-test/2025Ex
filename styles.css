@@ -301,3 +301,53 @@ select.options{
   }
   .modal-content p{font-size:1rem;}
 }
+/* ==========================================
+   試作告知バー - styles.css の最後に追加
+   ========================================== */
+
+.notice-banner {
+  background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+  border-bottom: 2px solid #ffc107;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.15);
+}
+
+.notice-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notice-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.notice-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #856404;
+}
+
+.notice-text strong {
+  color: #533f03;
+  font-weight: 700;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .notice-banner {
+    padding: 10px 12px;
+  }
+  
+  .notice-icon {
+    font-size: 1.2rem;
+  }
+  
+  .notice-text {
+    font-size: 0.85rem;
+  }
+}
