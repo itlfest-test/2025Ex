@@ -1,5 +1,5 @@
 // ============================
-// script.js - 修正版（日時表示とお気に入り改善）
+// script.js - 修正版（学祭スライダー・情報ページ追加）
 // ============================
 
 // --- constants / keys
@@ -68,7 +68,7 @@ function formatDateTime(startStr, endStr) {
     
     return result;
   } catch (e) {
-    return startStr; // エラーの場合は元の文字列を返す
+    return startStr;
   }
 }
 
@@ -97,14 +97,35 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("setupIntroModal error:", e);
   }
 
-  // ④ EVENT_DATA 読み込み後に実行
+  // ④ 学祭情報スライダー
+  try {
+    setupFestivalSlider();
+  } catch (e) {
+    console.warn("setupFestivalSlider error:", e);
+  }
+
+  // ⑤ 情報ページ（リンク集・問い合わせ）
+  try {
+    setupInfoPage();
+  } catch (e) {
+    console.warn("setupInfoPage error:", e);
+  }
+
+  // ⑥ 説明ボタン
+  try {
+    setupDescriptionButtons();
+  } catch (e) {
+    console.warn("setupDescriptionButtons error:", e);
+  }
+
+  // ⑦ EVENT_DATA 読み込み後に実行
   waitForEventData(() => {
     renderResults(getAllEvents());
     loadFavorites();
     loadHistory();
   });
 
-  // ⑤ イベント登録
+  // ⑧ イベント登録
   const sBtn = document.getElementById("searchBtn");
   const cBtn = document.getElementById("clearBtn");
   if (sBtn) sBtn.addEventListener("click", onSearch);
@@ -125,6 +146,197 @@ function waitForEventData(callback) {
       callback();
     }
   }, 50);
+}
+
+// ============================
+// 🎪 学祭情報スライダー
+// ============================
+let currentSlide = 0;
+let festivalData = [];
+
+function setupFestivalSlider() {
+  festivalData = window.FESTIVAL_DATA || [];
+  if (festivalData.length === 0) return;
+
+  const prevBtn = document.getElementById("sliderPrev");
+  const nextBtn = document.getElementById("sliderNext");
+  const dotsContainer = document.getElementById("sliderDots");
+
+  // ドット生成
+  festivalData.forEach((_, index) => {
+    const dot = document.createElement("button");
+    dot.className = "slider-dot";
+    if (index === 0) dot.classList.add("active");
+    dot.addEventListener("click", () => goToSlide(index));
+    dotsContainer.appendChild(dot);
+  });
+
+  // ボタンイベント
+  if (prevBtn) prevBtn.addEventListener("click", () => changeSlide(-1));
+  if (nextBtn) nextBtn.addEventListener("click", () => changeSlide(1));
+
+  // 初期表示
+  updateSlide();
+
+  // 自動スライド（5秒ごと）
+  setInterval(() => changeSlide(1), 5000);
+}
+
+function changeSlide(direction) {
+  currentSlide += direction;
+  if (currentSlide < 0) currentSlide = festivalData.length - 1;
+  if (currentSlide >= festivalData.length) currentSlide = 0;
+  updateSlide();
+}
+
+function goToSlide(index) {
+  currentSlide = index;
+  updateSlide();
+}
+
+function updateSlide() {
+  if (festivalData.length === 0) return;
+
+  const festival = festivalData[currentSlide];
+  
+  const nameEl = document.getElementById("sliderFestivalName");
+  const datesEl = document.getElementById("sliderDates");
+  const highlightEl = document.getElementById("sliderHighlight");
+  const messageEl = document.getElementById("sliderMessage");
+
+  if (nameEl) {
+    const number = festival.number ? `${festival.number} ` : "";
+    nameEl.textContent = `${festival.university} ${number}${festival.festivalName}`;
+  }
+  if (datesEl) datesEl.textContent = `開催日：${festival.dates}`;
+  if (highlightEl) highlightEl.textContent = `目玉企画：${festival.highlight}`;
+  if (messageEl) messageEl.textContent = festival.message;
+
+  // ドット更新
+  const dots = document.querySelectorAll(".slider-dot");
+  dots.forEach((dot, index) => {
+    dot.classList.toggle("active", index === currentSlide);
+  });
+}
+
+// ============================
+// ℹ️ 情報ページ（リンク集・問い合わせ）
+// ============================
+function setupInfoPage() {
+  // リンク集
+  const linksData = window.FESTIVAL_LINKS || [];
+  const linksList = document.getElementById("links-list");
+  if (linksList && linksData.length > 0) {
+    linksData.forEach(link => {
+      const card = document.createElement("div");
+      card.className = "link-card";
+      
+      const hasUrl = link.url && link.url !== "";
+      const hasInstagram = link.sns.instagram && link.sns.instagram !== "";
+      const hasX = link.sns.x && link.sns.x !== "";
+      
+      card.innerHTML = `
+        <div class="link-card-title">${escapeHtml(link.university)}</div>
+        <div class="link-card-campus">${escapeHtml(link.campus)}</div>
+        <div class="link-card-festival">${escapeHtml(link.festivalName)}</div>
+        ${hasUrl ? `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener" class="link-card-url">${escapeHtml(link.url)}</a>` : '<div class="link-card-url" style="color:#999;">URL準備中</div>'}
+        ${hasInstagram || hasX ? `
+          <div class="link-card-sns">
+            ${hasInstagram ? `<a href="https://instagram.com/${escapeHtml(link.sns.instagram).replace('@', '')}" target="_blank" rel="noopener" class="sns-link">📷 ${escapeHtml(link.sns.instagram)}</a>` : ''}
+            ${hasX ? `<a href="https://x.com/${escapeHtml(link.sns.x).replace('@', '')}" target="_blank" rel="noopener" class="sns-link">𝕏 ${escapeHtml(link.sns.x)}</a>` : ''}
+          </div>
+        ` : ''}
+      `;
+      linksList.appendChild(card);
+    });
+  }
+
+  // 問い合わせ先
+  const contactData = window.CONTACT_INFO || {};
+  const contactInfo = document.getElementById("contact-info");
+  if (contactInfo && contactData.email) {
+    contactInfo.innerHTML = `
+      <p class="contact-message">${escapeHtml(contactData.message || "")}</p>
+      <div class="contact-item">
+        <span class="contact-label">Email:</span>
+        <span class="contact-value">${escapeHtml(contactData.email)}</span>
+      </div>
+      ${contactData.sns.instagram ? `
+        <div class="contact-item">
+          <span class="contact-label">Instagram:</span>
+          <a href="${escapeHtml(contactData.sns.instagram.url)}" target="_blank" rel="noopener" class="contact-link">${escapeHtml(contactData.sns.instagram.id)}</a>
+        </div>
+      ` : ''}
+      ${contactData.sns.x ? `
+        <div class="contact-item">
+          <span class="contact-label">X (Twitter):</span>
+          <a href="${escapeHtml(contactData.sns.x.url)}" target="_blank" rel="noopener" class="contact-link">${escapeHtml(contactData.sns.x.id)}</a>
+        </div>
+      ` : ''}
+    `;
+  }
+}
+
+// ============================
+// 📖 説明ボタン
+// ============================
+function setupDescriptionButtons() {
+  const descModal = document.getElementById("descModal");
+  const descTitle = document.getElementById("descTitle");
+  const descText = document.getElementById("descText");
+  const descClose = document.getElementById("descClose");
+  const descOk = document.getElementById("descOk");
+
+  document.querySelectorAll(".info-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const type = btn.dataset.type;
+      const selectEl = document.getElementById(type);
+      const selectedValue = selectEl ? selectEl.value : "";
+
+      let title = "";
+      let text = "";
+
+      if (type === "category") {
+        const categories = window.categoryOptions || [];
+        if (selectedValue) {
+          const cat = categories.find(c => c.value === selectedValue);
+          if (cat) {
+            title = cat.value;
+            text = cat.description;
+          }
+        } else {
+          title = "カテゴリについて";
+          text = "企画のジャンルを選択できます。お笑い、音楽、展示、飲食など様々なカテゴリから絞り込めます。";
+        }
+      } else if (type === "field") {
+        const fields = window.fieldOptions || [];
+        if (selectedValue) {
+          const field = fields.find(f => f.value === selectedValue);
+          if (field) {
+            title = field.value;
+            text = field.description;
+          }
+        } else {
+          title = "分野について";
+          text = "企画の学問分野を選択できます。理工、芸術、社会、法など、専門分野で絞り込めます。";
+        }
+      } else if (type === "university") {
+        title = "大学について";
+        text = "開催キャンパスで絞り込めます。複数キャンパスで開催している大学もあります。";
+      }
+
+      if (descTitle) descTitle.textContent = title;
+      if (descText) descText.textContent = text;
+      if (descModal) descModal.classList.remove("hidden");
+    });
+  });
+
+  if (descClose) descClose.addEventListener("click", () => {
+    if (descModal) descModal.classList.add("hidden");
+  });
+  if (descOk) descOk.addEventListener("click", () => {
+    if (descModal) descModal.classList.add("hidden");
+  });
 }
 
 // ============================
@@ -185,7 +397,6 @@ function createEventCard(ev) {
   const favs = loadFavoritesArray();
   const isFav = favs.includes(ev.id);
   
-  // 日時を読みやすい形式に変換
   const dateTimeStr = formatDateTime(evStartDateTime(ev), evEndDateTime(ev));
   const placeStr = evPlace(ev);
 
@@ -376,11 +587,13 @@ function setupNavigation() {
       const resultsArea = document.getElementById("results-area");
       const favoritesArea = document.getElementById("favorites-area");
       const mapArea = document.getElementById("map-area");
+      const infoArea = document.getElementById("info-area");
 
       if (searchArea) searchArea.classList.toggle("hidden", view !== "search");
       if (resultsArea) resultsArea.classList.toggle("hidden", view !== "search");
       if (favoritesArea) favoritesArea.classList.toggle("hidden", view !== "favorites");
       if (mapArea) mapArea.classList.toggle("hidden", view !== "map");
+      if (infoArea) infoArea.classList.toggle("hidden", view !== "info");
 
       if (view === "favorites") {
         renderFavorites();
@@ -415,7 +628,7 @@ function setupIntroModal() {
 }
 
 // ============================
-// 📌 セレクト選択肢ロード（options.js 依存）
+// 📌 セレクト選択肢ロード
 // ============================
 function loadOptionsSafe() {
   try {
@@ -439,24 +652,24 @@ function loadOptionsSafe() {
       });
     }
 
-    // category
+    // category（説明付き）
     if (Array.isArray(window.categoryOptions)) {
       catEl.innerHTML = `<option value="">指定なし</option>`;
       window.categoryOptions.forEach((c) => {
         const op = document.createElement("option");
-        op.value = c;
-        op.textContent = c;
+        op.value = c.value;
+        op.textContent = c.value;
         catEl.appendChild(op);
       });
     }
 
-    // field
+    // field（説明付き）
     if (Array.isArray(window.fieldOptions)) {
       fieldEl.innerHTML = `<option value="">指定なし</option>`;
       window.fieldOptions.forEach((f) => {
         const op = document.createElement("option");
-        op.value = f;
-        op.textContent = f;
+        op.value = f.value;
+        op.textContent = f.value;
         fieldEl.appendChild(op);
       });
     }
