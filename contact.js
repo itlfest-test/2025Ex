@@ -1,1 +1,18 @@
+// contact.js - 問い合わせ先データ
+const contactInfo = {
+  email: "（未定）",
+  sns: {
+    instagram: {
+      id: "@ITLFEST_2025",
+      url: "https://instagram.com/ITLFEST_2025"
+    },
+    x: {
+      id: "@Festival_iTL",
+      url: "https://x.com/Festival_iTL"
+    }
+  },
+  message: "ご質問やお問い合わせは、下記のSNSアカウントまでお気軽にご連絡ください。"
+};
 
+// グローバルに公開
+window.CONTACT_INFO = contactInfo;
