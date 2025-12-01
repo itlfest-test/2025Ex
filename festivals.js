@@ -153,7 +153,7 @@ const festivals = [
   {
     university: "東京科学大学",
     campus: "大岡山キャンパス",
-    festivalName: "工大祭2925 Bloom",
+    festivalName: "工大祭2025 Bloom",
     number: "", // 回数不明
     dates: "2025年11月2日(日)〜3日(月・祝)",
     highlight: "CCCレモン（小児がん支援）",
