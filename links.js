@@ -4,7 +4,7 @@ const festivalLinks = [
     university: "中央大学",
     campus: "市谷田町キャンパス",
     festivalName: "iTLFest. 2025",
-    url: "https://itl-festival.jp", // 仮URL
+    url: "https://itlfest.com/", // 
     sns: {
       instagram: "@ITLFEST_2025",
       x: "@Festival_iTL"
@@ -14,7 +14,7 @@ const festivalLinks = [
     university: "中央大学",
     campus: "後楽園キャンパス",
     festivalName: "理工白門祭",
-    url: "https://rikohakumon.com", // 仮URL
+    url: "", // 
     sns: {
       instagram: "",
       x: ""
@@ -34,7 +34,7 @@ const festivalLinks = [
     university: "中央大学",
     campus: "多摩キャンパス",
     festivalName: "白門祭",
-    url: "https://hakumonsai.jp",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -44,7 +44,7 @@ const festivalLinks = [
     university: "東京理科大学",
     campus: "神楽坂キャンパス",
     festivalName: "理大祭",
-    url: "https://kagurazaka.ridaisai.com",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -54,7 +54,7 @@ const festivalLinks = [
     university: "東京理科大学",
     campus: "葛飾キャンパス",
     festivalName: "葛飾地区理大祭",
-    url: "https://katsushika.ridaisai.com",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -64,7 +64,7 @@ const festivalLinks = [
     university: "東京理科大学",
     campus: "野田キャンパス",
     festivalName: "野田地区理大祭",
-    url: "https://noda.ridaisai.com",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -74,7 +74,7 @@ const festivalLinks = [
     university: "法政大学",
     campus: "市ヶ谷キャンパス",
     festivalName: "自主法政祭",
-    url: "https://jishuhoseisai.com",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -94,7 +94,7 @@ const festivalLinks = [
     university: "上智大学",
     campus: "四谷キャンパス",
     festivalName: "SOPHIA FESTIVAL",
-    url: "https://sophiafestival.jp",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -104,7 +104,7 @@ const festivalLinks = [
     university: "明治大学",
     campus: "和泉キャンパス",
     festivalName: "生明祭",
-    url: "https://seimeisai.com",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -114,7 +114,7 @@ const festivalLinks = [
     university: "東京大学",
     campus: "駒場キャンパス",
     festivalName: "駒場祭",
-    url: "https://komabasai.net",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -124,7 +124,7 @@ const festivalLinks = [
     university: "早稲田大学",
     campus: "早稲田キャンパス",
     festivalName: "早稲田祭",
-    url: "https://wasedasai.net",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -134,7 +134,7 @@ const festivalLinks = [
     university: "早稲田大学",
     campus: "西早稲田キャンパス",
     festivalName: "理工展",
-    url: "https://rikoten.com",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -154,7 +154,7 @@ const festivalLinks = [
     university: "東京科学大学",
     campus: "大岡山キャンパス",
     festivalName: "工大祭2925 Bloom",
-    url: "https://koudaisai.jp",
+    url: "",
     sns: {
       instagram: "",
       x: ""
@@ -164,7 +164,7 @@ const festivalLinks = [
     university: "武蔵野美術大学",
     campus: "鷹の台キャンパス",
     festivalName: "芸術祭",
-    url: "https://mau-geisai.com",
+    url: "",
     sns: {
       instagram: "",
       x: ""
