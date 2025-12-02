@@ -1,0 +1,454 @@
+const routeData = {  
+  "JR中央・総武線": [
+    { from: "吉祥寺", to: "三鷹", time: 2, distance: 1.6 },
+    { from: "中野", to: "吉祥寺", time: 10, distance: 7.8 },
+    { from: "東中野", to: "中野", time: 3, distance: 1.9 },
+    { from: "新宿", to: "東中野", time: 5, distance: 2.5 },
+    { from: "代々木", to: "新宿", time: 2, distance: 0.7 },
+    { from: "信濃町", to: "代々木", time: 3, distance: 1.7 },
+    { from: "信濃町", to: "四ツ谷", time: 2, distance: 1.3 },
+    { from: "市ヶ谷", to: "四ツ谷", time: 2, distance: 0.8 },
+    { from: "市ヶ谷", to: "飯田橋", time: 2, distance: 1.5 },
+    { from: "飯田橋", to: "水道橋", time: 1, distance: 0.9 },
+    { from: "水道橋", to: "御茶ノ水", time: 2, distance: 0.8 },
+    { from: "御茶ノ水", to: "秋葉原", time: 2, distance: 0.9 },
+    { from: "秋葉原", to: "浅草橋", time: 2, distance: 1.1 },
+    { from: "浅草橋", to: "両国", time: 2, distance: 0.8 },
+    { from: "両国", to: "錦糸町", time: 2, distance: 1.5 },
+    { from: "錦糸町", to: "亀戸", time: 2, distance: 1.5 }
+  ],
+
+  "都営新宿線/京王線": [
+    { from: "市ヶ谷", to: "九段下", time: 2, distance: 1.3 },
+    { from: "神保町", to: "九段下", time: 1, distance: 0.6 },
+    { from: "神保町", to: "小川町", time: 2, distance: 0.9 },
+    { from: "小川町", to: "岩本町", time: 1, distance: 0.8 },
+    { from: "岩本町", to: "馬喰横山", time: 1, distance: 0.8 },
+    { from: "馬喰横山", to: "森下", time: 2, distance: 1.4 },
+    { from: "森下", to: "住吉", time: 3, distance: 1.7 },
+    { from: "住吉", to: "本八幡", time: 19, distance: 12.3 },
+    { from: "市ヶ谷", to: "新宿三丁目", time: 4, distance: 2.9 },
+    { from: "新宿三丁目", to: "新線新宿", time: 1, distance: 0.8 },
+    { from: "新線新宿", to: "笹塚", time: 6, distance: 3.6 },
+    { from: "新宿（京王線）", to: "笹塚", time: 4, distance: 3.6 },
+    { from: "笹塚", to: "調布", trains: [
+        { type: "特急（笹塚で乗換推奨）", time: 13, note: "都営線から直通せず笹塚で特急に乗り換えると速い" },
+        { type: "都営直通快速", time: 19 }
+      ], distance: 11.9 },
+    { from: "調布", to: "高幡不動", time: 14, distance: 14.2, note: "特急利用・後続優等待ち推奨" },
+    { from: "調布", to: "京王多摩センター", trains: [
+        { type: "特急", time: 12 },
+        { type: "それ以外", time: 17 }
+      ], distance: 13.7 },
+    { from: "高幡不動", to: "多摩動物公園", time: 3, distance: 2.0 }
+  ],
+
+  "東京メトロ南北線/東急目黒線/東急大井町線": [
+    { from: "王子", to: "駒込", time: 4, distance: 2.4 },
+    { from: "駒込", to: "東大前", time: 3, distance: 2.3 },
+    { from: "後楽園", to: "東大前", time: 3, distance: 1.3 },
+    { from: "飯田橋", to: "後楽園", time: 1, distance: 1.4 },
+    { from: "市ヶ谷", to: "飯田橋", time: 2, distance: 1.5 },
+    { from: "市ヶ谷", to: "四ツ谷", time: 1, distance: 1.0 },
+    { from: "四ツ谷", to: "永田町", time: 2, distance: 1.5 },
+    { from: "永田町", to: "溜池山王", time: 1, distance: 0.7 },
+    { from: "溜池山王", to: "目黒", time: 12, distance: 5.7 },
+    { from: "目黒", to: "大岡山", trains: [
+        { type: "急行", time: 6 },
+        { type: "各停", time: 9 }
+      ], distance: 4.3 },
+    { from: "大岡山", to: "武蔵小杉", time: 9, distance: 5.3 },
+    { from: "大岡山", to: "自由が丘", time: 3, distance: 1.5 },
+    { from: "大岡山", to: "中延", time: 6, distance: 2.7 },
+    { from: "中延", to: "大井町", time: 4, distance: 2.1 }
+  ],
+
+  "東京メトロ有楽町線": [
+    { from: "有楽町", to: "永田町", time: 4, distance: 1.9 },
+    { from: "市ヶ谷", to: "永田町", time: 3, distance: 1.8 },
+    { from: "市ヶ谷", to: "飯田橋", time: 2, distance: 1.5 },
+    { from: "飯田橋", to: "池袋", time: 9, distance: 4.9 }
+  ],
+
+  "東京メトロ丸ノ内線": [
+    { from: "池袋", to: "茗荷谷", time: 5, distance: 3.0 },
+    { from: "茗荷谷", to: "後楽園", time: 3, distance: 1.8 },
+    { from: "後楽園", to: "本郷三丁目", time: 1, distance: 0.8 },
+    { from: "本郷三丁目", to: "御茶ノ水", time: 1, distance: 0.8 },
+    { from: "御茶ノ水", to: "淡路町", time: 1, distance: 0.8 },
+    { from: "淡路町", to: "大手町", time: 1, distance: 0.9 },
+    { from: "大手町", to: "東京", time: 1, distance: 0.6 },
+    { from: "東京", to: "銀座", time: 2, distance: 1.1 },
+    { from: "銀座", to: "霞ヶ関", time: 1, distance: 1.0 },
+    { from: "霞ヶ関", to: "国会議事堂前", time: 1, distance: 0.7 },
+    { from: "国会議事堂前", to: "赤坂見附", time: 1, distance: 0.9 },
+    { from: "赤坂見附", to: "四ツ谷", time: 2, distance: 1.3 },
+    { from: "四ツ谷", to: "新宿三丁目", time: 5, distance: 2.6 },
+    { from: "新宿三丁目", to: "新宿", time: 1, distance: 0.3 },
+    { from: "新宿", to: "中野坂上", time: 4, distance: 1.9 },
+    { from: "中野坂上", to: "荻窪", time: 10, distance: 5.7 }
+  ],
+
+  "東京メトロ東西線": [
+    { from: "中野", to: "高田馬場", time: 6, distance: 3.9 },
+    { from: "高田馬場", to: "早稲田", time: 2, distance: 1.7 },
+    { from: "早稲田", to: "飯田橋", time: 4, distance: 2.4 },
+    { from: "飯田橋", to: "九段下", time: 1, distance: 0.7 },
+    { from: "九段下", to: "大手町", time: 4, distance: 2.1 },
+    { from: "大手町", to: "日本橋", time: 2, distance: 0.8 },
+    { from: "日本橋", to: "茅場町", time: 1, distance: 0.5 },
+    { from: "茅場町", to: "門前仲町", time: 3, distance: 1.8 }
+  ],
+
+  "東京メトロ千代田線/JR常磐緩行線": [
+    { from: "代々木上原", to: "明治神宮前", time: 4, distance: 2.2 },
+    { from: "明治神宮前", to: "表参道", time: 1, distance: 0.9 },
+    { from: "表参道", to: "国会議事堂前", time: 6, distance: 3.3 },
+    { from: "国会議事堂前", to: "霞ヶ関", time: 1, distance: 0.8 },
+    { from: "霞ヶ関", to: "日比谷", time: 1, distance: 0.8 },
+    { from: "日比谷", to: "大手町", time: 3, distance: 1.4 },
+    { from: "大手町", to: "新御茶ノ水", time: 2, distance: 1.3 },
+    { from: "新御茶ノ水", to: "西日暮里", time: 7, distance: 4.3 },
+    { from: "西日暮里", to: "町屋", time: 3, distance: 1.7 },
+    { from: "町屋", to: "北千住", time: 3, distance: 2.6 },
+    { from: "北千住", to: "綾瀬", time: 3, distance: 2.6 },
+    { from: "綾瀬", to: "金町", time: 7, distance: 4.1 }
+  ],
+
+  "東京メトロ副都心線/東急東横線": [
+    { from: "池袋", to: "西早稲田", time: 5, distance: 3.3 },
+    { from: "西早稲田", to: "東新宿", time: 1, distance: 0.9 },
+    { from: "東新宿", to: "新宿三丁目", time: 2, distance: 1.1 },
+    { from: "新宿三丁目", to: "明治神宮前", time: 4, distance: 2.6 },
+    { from: "明治神宮前", to: "渋谷", time: 2, distance: 1.0 },
+    { from: "渋谷", to: "中目黒", time: 5, distance: 2.2 },
+    { from: "中目黒", to: "自由が丘", time: 6, distance: 4.8 },
+    { from: "自由が丘", to: "武蔵小杉", time: 6, distance: 3.8 }
+  ],
+
+  "都営三田線": [
+    { from: "目黒", to: "三田", time: 9, distance: 4.0 },
+    { from: "三田", to: "日比谷", time: 6, distance: 3.3 },
+    { from: "日比谷", to: "大手町", time: 1, distance: 0.9 },
+    { from: "大手町", to: "神保町", time: 2, distance: 1.7 },
+    { from: "神保町", to: "水道橋", time: 2, distance: 1.0 },
+    { from: "水道橋", to: "春日", time: 1, distance: 0.7 },
+    { from: "春日", to: "巣鴨", time: 5, distance: 3.3 }
+  ],
+
+  "都営大江戸線": [
+    { from: "都庁前", to: "中野坂上", time: 4, distance: 2.0 },
+    { from: "中野坂上", to: "東中野", time: 2, distance: 1.0 },
+    { from: "東中野", to: "練馬", time: 8, distance: 5.3 },
+
+    { from: "都庁前", to: "東新宿", time: 5, distance: 2.2 },
+    { from: "東新宿", to: "飯田橋", time: 8, distance: 3.6 },
+    { from: "飯田橋", to: "春日", time: 1, distance: 1.0 },
+    { from: "春日", to: "本郷三丁目", time: 1, distance: 0.8 },
+    { from: "本郷三丁目", to: "上野御徒町", time: 2, distance: 1.1 },
+    { from: "上野御徒町", to: "蔵前", time: 3, distance: 1.8 },
+    { from: "蔵前", to: "両国", time: 2, distance: 1.2 },
+    { from: "両国", to: "森下", time: 2, distance: 1.0 },
+    { from: "森下", to: "清澄白河", time: 1, distance: 0.6 },
+    { from: "清澄白河", to: "門前仲町", time: 2, distance: 1.2 },
+    { from: "門前仲町", to: "大門", time: 11, distance: 5.5 },
+    { from: "大門", to: "青山一丁目", time: 9, distance: 4.5 },
+    { from: "青山一丁目", to: "代々木", time: 5, distance: 2.7 },
+    { from: "代々木", to: "新宿", time: 1, distance: 0.6 }
+  ],
+
+  "京王井の頭線": [
+    { from: "渋谷", to: "駒場東大前", time: 3, distance: 1.4 },
+    { from: "駒場東大前", to: "下北沢", time: 3, distance: 1.6 },
+    { from: "下北沢", to: "明大前", time: 4, distance: 1.9 },
+    { from: "明大前", to: "永福町", time: 2, distance: 1.1 },
+    { from: "永福町", to: "吉祥寺", time: 10, distance: 6.7, note: "急行" }
+  ],
+
+  "多摩モノレール": [
+    { from: "多摩センター", to: "大塚・帝京大学", time: 4, distance: 1.7 },
+    { from: "大塚・帝京大学", to: "中央大学・明星大学", time: 1, distance: 0.9 },
+    { from: "中央大学・明星大学", to: "多摩動物公園", time: 2, distance: 1.1 },
+    { from: "多摩動物公園", to: "高幡不動", time: 5, distance: 1.8 },
+    { from: "高幡不動", to: "立川南", time: 10, distance: 4.7 },
+    { from: "立川南", to: "立川北", time: 1, distance: 0.4 },
+    { from: "立川北", to: "玉川上水", time: 9, distance: 3.9 }
+  ],
+
+  "JR山手線": [
+    { from: "品川", to: "大崎", time: 3, distance: 2.0 },
+    { from: "大崎", to: "五反田", time: 2, distance: 0.9 },
+    { from: "五反田", to: "目黒", time: 2, distance: 1.2 },
+    { from: "目黒", to: "恵比寿", time: 2, distance: 1.5 },
+    { from: "恵比寿", to: "渋谷", time: 4, distance: 1.6 },
+    { from: "渋谷", to: "原宿", time: 3, distance: 1.2 },
+    { from: "原宿", to: "代々木", time: 2, distance: 1.5 },
+    { from: "代々木", to: "新宿", time: 3, distance: 0.7 },
+    { from: "新宿", to: "高田馬場", time: 4, distance: 2.7 },
+    { from: "高田馬場", to: "池袋", time: 5, distance: 2.1 },
+    { from: "池袋", to: "大塚", time: 2, distance: 1.8 },
+    { from: "大塚", to: "巣鴨", time: 2, distance: 1.1 },
+    { from: "巣鴨", to: "駒込", time: 2, distance: 0.7 },
+    { from: "駒込", to: "田端", time: 3, distance: 1.6 },
+    { from: "田端", to: "西日暮里", time: 1, distance: 0.8 },
+    { from: "西日暮里", to: "日暮里", time: 2, distance: 0.5 },
+    { from: "日暮里", to: "上野", time: 4, distance: 2.2 },
+    { from: "上野", to: "御徒町", time: 2, distance: 0.6 },
+    { from: "御徒町", to: "秋葉原", time: 2, distance: 1.0 },
+    { from: "秋葉原", to: "神田", time: 1, distance: 0.7 },
+    { from: "神田", to: "東京", time: 2, distance: 1.3 },
+    { from: "東京", to: "有楽町", time: 2, distance: 0.8 },
+    { from: "有楽町", to: "新橋", time: 2, distance: 1.1 },
+    { from: "新橋", to: "浜松町", time: 2, distance: 1.2 },
+    { from: "浜松町", to: "田町", time: 3, distance: 1.5 },
+    { from: "田町", to: "高輪ゲートウェイ", time: 3, distance: 1.3 },
+    { from: "高輪ゲートウェイ", to: "品川", time: 2, distance: 0.9 }
+  ],
+
+  "JR常磐線（金町方面）": [
+    { from: "品川", to: "新橋", time: 5, distance: 4.9 },
+    { from: "新橋", to: "東京", time: 3, distance: 1.9 },
+    { from: "東京", to: "上野", time: 6, distance: 3.6 },
+    { from: "上野", to: "日暮里", time: 3, distance: 2.2 },
+    { from: "日暮里", to: "南千住", time: 5, distance: 3.4 },
+    { from: "南千住", to: "北千住", time: 2, distance: 1.8 },
+    { from: "北千住", to: "柏", time: 17, distance: 21.7 }
+  ],
+
+  "東武野田線": [
+    { from: "大宮", to: "春日部", trains: [
+        { type: "急行", time: 17 },
+        { type: "各停", time: 22 }
+      ], distance: 15.2 },
+    { from: "春日部", to: "運河", time: 26, distance: 18.0 },
+    { from: "運河", to: "流山おおたかの森", time: 7, distance: 5.2 },
+    { from: "流山おおたかの森", to: "柏", time: 6, distance: 4.5 },
+    { from: "柏", to: "新鎌ヶ谷", time: 10, distance: 10.4 },
+    { from: "新鎌ヶ谷", to: "船橋", time: 8, distance: 9.4 }
+  ],
+
+  "西武国分寺線": [
+    { from: "国分寺", to: "鷹の台", time: 5, distance: 3.6 },
+    { from: "小川", to: "鷹の台", time: 2, distance: 1.5 }
+  ],
+
+  "西武新宿線・拝島線": [
+    { from: "西武新宿", to: "高田馬場", time: 3, distance: 2.0 },
+    { from: "高田馬場", to: "小平", trains: [
+        { type: "急行", time: 26 }
+      ], distance: 20.6 },
+    { from: "小平", to: "所沢", time: 7, distance: 6.3 },
+    { from: "小平", to: "小川", time: 5, distance: 2.7 },
+    { from: "小川", to: "東大和市", time: 3, distance: 3.0 },
+    { from: "東大和市", to: "玉川上水", time: 2, distance: 1.5 }
+  ],
+
+  "東京メトロ日比谷線": [
+    { from: "中目黒", to: "恵比寿", time: 2, distance: 1.0 },
+    { from: "恵比寿", to: "霞が関", time: 12, distance: 6.0 },
+    { from: "霞が関", to: "日比谷", time: 2, distance: 1.2 },
+    { from: "日比谷", to: "銀座", time: 1, distance: 0.4 },
+    { from: "銀座", to: "八丁堀", time: 6, distance: 2.0 },
+    { from: "八丁堀", to: "茅場町", time: 1, distance: 0.5 },
+    { from: "茅場町", to: "人形町", time: 2, distance: 0.9 },
+    { from: "人形町", to: "秋葉原", time: 4, distance: 1.5 },
+    { from: "秋葉原", to: "仲御徒町", time: 2, distance: 1.0 },
+    { from: "仲御徒町", to: "上野", time: 1, distance: 0.5 },
+    { from: "上野", to: "南千住", time: 6, distance: 3.2 },
+    { from: "南千住", to: "北千住", time: 2, distance: 2.1 }
+  ],
+
+  "東京メトロ半蔵門線": [
+    { from: "渋谷", to: "表参道", time: 2, distance: 1.3 },
+    { from: "表参道", to: "青山一丁目", time: 2, distance: 1.4 },
+    { from: "青山一丁目", to: "永田町", time: 1, distance: 1.4 },
+    { from: "永田町", to: "九段下", time: 4, distance: 2.6 },
+    { from: "九段下", to: "神保町", time: 1, distance: 0.4 },
+    { from: "神保町", to: "大手町", time: 3, distance: 1.7 },
+    { from: "大手町", to: "三越前", time: 2, distance: 0.7 },
+    { from: "三越前", to: "水天宮前", time: 3, distance: 1.3 },
+    { from: "水天宮前", to: "清澄白河", time: 3, distance: 1.7 },
+    { from: "清澄白河", to: "住吉", time: 3, distance: 1.9 },
+    { from: "住吉", to: "錦糸町", time: 2, distance: 1.0 },
+    { from: "錦糸町", to: "押上", time: 2, distance: 1.4 },
+    { from: "曳舟", to: "押上", time: 2, distance: 1.3 }
+  ],
+
+  "東武スカイツリーライン": [
+    { from: "浅草", to: "曳舟", time: 5, distance: 2.4 },
+    { from: "曳舟", to: "北千住", time: 7, distance: 4.7 },
+    { from: "北千住", to: "春日部", trains: [
+        { type: "急行", time: 33 },
+        { type: "特急", time: 20 }
+      ], distance: 28.2 }
+  ],
+
+  "京浜東北線": [
+    { from: "大宮", to: "浦和", time: 9, distance: 6.1 },
+    { from: "浦和", to: "南浦和", time: 3, distance: 1.7 },
+    { from: "南浦和", to: "赤羽", time: 12, distance: 9.3 },
+    { from: "赤羽", to: "王子", time: 5, distance: 3.3 },
+    { from: "王子", to: "田端", time: 5, distance: 2.8 }
+  ],
+
+  "銀座線": [
+    { from: "渋谷", to: "表参道", time: 2, distance: 1.2 },
+    { from: "表参道", to: "青山一丁目", time: 4, distance: 1.4 },
+    { from: "青山一丁目", to: "赤坂見附", time: 2, distance: 1.3 },
+    { from: "赤坂見附", to: "溜池山王", time: 1, distance: 0.7 },
+    { from: "溜池山王", to: "新橋", time: 3, distance: 1.6 },
+    { from: "新橋", to: "銀座", time: 2, distance: 0.9 },
+    { from: "銀座", to: "日本橋", time: 3, distance: 1.4 },
+    { from: "日本橋", to: "三越前", time: 1, distance: 0.6 },
+    { from: "三越前", to: "神田", time: 1, distance: 0.7 },
+    { from: "神田", to: "上野広小路", time: 3, distance: 1.7 },
+    { from: "上野広小路", to: "上野", time: 1, distance: 0.5 },
+    { from: "上野", to: "浅草", time: 5, distance: 2.2 }
+  ],
+
+  "都営浅草線": [
+    { from: "押上", to: "浅草", time: 3, distance: 1.5 },
+    { from: "浅草", to: "蔵前", time: 1, distance: 0.9 },
+    { from: "蔵前", to: "浅草橋", time: 2, distance: 0.7 },
+    { from: "浅草橋", to: "東日本橋", time: 1, distance: 0.7 },
+    { from: "東日本橋", to: "人形町", time: 1, distance: 0.7 },
+    { from: "人形町", to: "日本橋", time: 2, distance: 0.8 },
+    { from: "日本橋", to: "新橋", time: 5, distance: 2.5 },
+    { from: "新橋", to: "大門", time: 1, distance: 1.0 },
+    { from: "大門", to: "三田", time: 2, distance: 1.5 },
+    { from: "三田", to: "泉岳寺", time: 2, distance: 1.1 },
+    { from: "泉岳寺", to: "五反田", time: 4, distance: 2.1 },
+    { from: "五反田", to: "中延", time: 4, distance: 2.7 }
+  ],
+
+  "中央線快速": [
+    { from: "東京", to: "神田", time: 1, distance: 1.3 },
+    { from: "神田", to: "御茶ノ水", time: 1, distance: 1.3 },
+    { from: "御茶ノ水", to: "四谷", time: 4, distance: 4.0 },
+    { from: "四谷", to: "新宿", time: 4, distance: 3.7 },
+    { from: "新宿", to: "中野", time: 4, distance: 4.4 },
+    { from: "中野", to: "吉祥寺", time: 11, distance: 7.8 },
+    { from: "吉祥寺", to: "三鷹", time: 3, distance: 1.6 },
+    { from: "三鷹", to: "国分寺", trains: [
+        { type: "特快", time: 7 },
+        { type: "快速", time: 10 }
+      ], distance: 7.3 },
+    { from: "国分寺", to: "西国分寺", time: 2, distance: 1.4 },
+    { from: "国分寺", to: "立川", trains: [
+        { type: "各停", time: 5 },
+        { type: "特快", time: 5 }
+      ], distance: 4.7 },
+    { from: "立川", to: "豊田", time: 6, distance: 5.6 }
+  ],
+
+  "東武亀戸線": [
+    { from: "亀戸", to: "曳舟", time: 8, distance: 3.4 }
+  ],
+
+  "総武快速線": [
+    { from: "東京", to: "新日本橋", time: 3, distance: 1.2 },
+    { from: "新日本橋", to: "馬喰町", time: 2, distance: 1.1 },
+    { from: "馬喰町", to: "錦糸町", time: 4, distance: 2.5 },
+    { from: "錦糸町", to: "新小岩", time: 5, distance: 5.2 },
+    { from: "新小岩", to: "市川", time: 5, distance: 5.4 },
+    { from: "市川", to: "船橋", time: 6, distance: 7.8 }
+  ],
+
+  "西武池袋線": [
+    { from: "池袋", to: "練馬", time: 11, distance: 6.0 },
+    { from: "練馬", to: "所沢", time: 23, distance: 18.8 }
+  ],
+
+  "上野東京ライン": [
+    { from: "上野", to: "赤羽", time: 12, distance: 9.8 },
+    { from: "赤羽", to: "浦和", time: 9, distance: 11.0 },
+    { from: "浦和", to: "大宮", time: 8, distance: 6.1 }
+  ],
+
+  "湘南新宿ライン": [
+    { from: "大宮", to: "浦和", time: 6, distance: 6.1 },
+    { from: "浦和", to: "赤羽", time: 8, distance: 11.0 },
+    { from: "赤羽", to: "池袋", time: 10, distance: 5.5 },
+    { from: "池袋", to: "新宿", time: 6, distance: 4.8 },
+    { from: "新宿", to: "渋谷", time: 5, distance: 3.4 },
+    { from: "渋谷", to: "恵比寿", time: 2, distance: 1.6 },
+    { from: "恵比寿", to: "大崎", time: 4, distance: 3.6 },
+    { from: "大崎", to: "武蔵小杉", time: 9, distance: 12.0 }
+  ],
+
+  "埼京線": [
+    { from: "大宮", to: "武蔵浦和", time: 11, distance: 7.4 },
+    { from: "武蔵浦和", to: "赤羽", trains: [
+        { type: "快速", time: 10 },
+        { type: "各停", time: 13 }
+      ], distance: 10.6 },
+    { from: "赤羽", to: "池袋", time: 9, distance: 5.5 },
+    { from: "池袋", to: "新宿", time: 6, distance: 4.8 },
+    { from: "新宿", to: "渋谷", time: 5, distance: 3.4 },
+    { from: "渋谷", to: "恵比寿", time: 2, distance: 1.6 },
+    { from: "恵比寿", to: "大崎", time: 4, distance: 3.6 },
+    { from: "大崎", to: "武蔵小杉", time: 9, distance: 12.0 }
+  ],
+
+  "つくばエクスプレス": [
+    { from: "秋葉原", to: "新御徒町", time: 2, distance: 1.6 },
+    { from: "新御徒町", to: "浅草", time: 2, distance: 1.5 },
+    { from: "浅草", to: "南千住", time: 3, distance: 2.5 },
+    { from: "南千住", to: "北千住", time: 2, distance: 1.9 },
+    { from: "北千住", to: "南流山", time: 15, distance: 14.6 },
+    { from: "南流山", to: "流山おおたかの森", time: 4, distance: 4.4 }
+  ],
+
+  "小田急小田原線・多摩線": [
+    { from: "新宿", to: "代々木上原", time: 5, distance: 3.5 },
+    { from: "代々木上原", to: "下北沢", time: 2, distance: 1.4 },
+    { from: "下北沢", to: "登戸", time: 10, distance: 10.3 },
+    { from: "登戸", to: "新百合ヶ丘", time: 10, distance: 6.3 },
+    { from: "新百合ヶ丘", to: "小田急多摩センター", time: 12, distance: 9.1 }
+  ],
+
+  "南武線": [
+    { from: "川崎", to: "武蔵小杉", trains: [
+        { type: "各停", time: 12 },
+        { type: "快速", time: 8 }
+      ], distance: 7.5 },
+    { from: "武蔵小杉", to: "武蔵溝ノ口", time: 7, distance: 5.2 },
+    { from: "武蔵溝ノ口", to: "登戸", trains: [
+        { type: "各停", time: 8 },
+        { type: "快速", time: 5 }
+      ], distance: 4.6 },
+    { from: "登戸", to: "稲田堤", trains: [
+        { type: "各停", time: 5 },
+        { type: "快速", time: 3 }
+      ], distance: 3.5 },
+    { from: "稲田堤", to: "府中本町", trains: [
+        { type: "各停", time: 10 },
+        { type: "快速", time: 7 }
+      ], distance: 7.1 },
+    { from: "府中本町", to: "分倍河原", time: 1, distance: 0.9 },
+    { from: "分倍河原", to: "立川", trains: [
+        { type: "各停", time: 11 },
+        { type: "快速", time: 7 }
+      ], distance: 6.7 }
+  ],
+
+  "京葉線・武蔵野線": [
+    { from: "東京", to: "八丁堀", time: 2, distance: 1.2 },
+    { from: "八丁堀", to: "新木場", time: 8, distance: 6.2 },
+    { from: "新木場", to: "舞浜", time: 6, distance: 5.3 },
+    { from: "舞浜", to: "市川塩浜", time: 6, distance: 5.5 },
+    { from: "市川塩浜", to: "西船橋", time: 8, distance: 5.9 },
+    { from: "西船橋", to: "東松戸", time: 9, distance: 7.2 },
+    { from: "東松戸", to: "新松戸", time: 7, distance: 6.5 },
+    { from: "新松戸", to: "南流山", time: 2, distance: 2.1 },
+    { from: "南流山", to: "南越谷", time: 14, distance: 11.9 },
+    { from: "南越谷", to: "東川口", time: 4, distance: 4.3 },
+    { from: "東川口", to: "南浦和", time: 8, distance: 7.5 },
+    { from: "南浦和", to: "武蔵浦和", time: 3, distance: 1.9 },
+    { from: "武蔵浦和", to: "北朝霞", time: 7, distance: 7.0 },
+    { from: "北朝霞", to: "新秋津", time: 10, distance: 9.8 },
+    { from: "新秋津", to: "西国分寺", time: 8, distance: 9.1 },
+    { from: "西国分寺", to: "府中本町", time: 5, distance: 3.9 }
+  ]
+ 
+};
