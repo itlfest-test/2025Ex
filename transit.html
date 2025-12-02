@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>簡易乗換案内</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-8 text-blue-600">🚇 簡易乗換案内</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">出発駅</label>
+          <select id="departure" class="w-full p-2 border border-gray-300 rounded-md">
+            <option value="">駅を選択してください</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">到着駅</label>
+          <select id="arrival" class="w-full p-2 border border-gray-300 rounded-md">
+            <option value="">駅を選択してください</option>
+          </select>
+        </div>
+      </div>
+      
+      <button onclick="searchRoute()" class="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition">
+        経路を検索
+      </button>
+    </div>
+
+    <div id="result" class="space-y-4"></div>
+  </div>
+
+  <!-- 外部JSファイルを読み込み -->
+  <script src="routeData.js"></script>
+  <script src="fareRates.js"></script>
+  <script src="transferData.js"></script>
+  <script src="campusData.js"></script>
+  
+  <!-- メインスクリプト -->
+  <script>
+    // 全駅リストを生成
+    function getAllStations() {
+      const stations = new Set();
+      Object.values(routeData).forEach(line => {
+        line.forEach(segment => {
+          stations.add(segment.from);
+          stations.add(segment.to);
+        });
+      });
+      return Array.from(stations).sort();
+    }
+
+    // 駅選択ドロップダウンを初期化
+    function initializeStationSelects() {
+      const stations = getAllStations();
+      const departureSelect = document.getElementById('departure');
+      const arrivalSelect = document.getElementById('arrival');
+      
+      stations.forEach(station => {
+        departureSelect.add(new Option(station, station));
+        arrivalSelect.add(new Option(station, station));
+      });
+    }
+
+    // 路線グラフを構築
+    function buildGraph() {
+      const graph = {};
+      
+      Object.entries(routeData).forEach(([lineName, segments]) => {
+        segments.forEach(segment => {
+          // 順方向
+          if (!graph[segment.from]) graph[segment.from] = [];
+          graph[segment.from].push({
+            station: segment.to,
+            line: lineName,
+            time: segment.trains ? Math.min(...segment.trains.map(t => t.time)) : segment.time,
+            distance: segment.distance,
+            segmentData: segment
+          });
+          
+          // 逆方向
+          if (!graph[segment.to]) graph[segment.to] = [];
+          graph[segment.to].push({
+            station: segment.from,
+            line: lineName,
+            time: segment.trains ? Math.min(...segment.trains.map(t => t.time)) : segment.time,
+            distance: segment.distance,
+            segmentData: segment
+          });
+        });
+      });
+      
+      return graph;
+    }
+
+    // ダイクストラ法で最短経路を探索
+    function findRoute(start, end, mode = 'time') {
+      const graph = buildGraph();
+      const distances = {};
+      const previous = {};
+      const segments = {};
+      const unvisited = new Set(Object.keys(graph));
+      
+      Object.keys(graph).forEach(station => {
+        distances[station] = Infinity;
+      });
+      distances[start] = 0;
+      
+      while (unvisited.size > 0) {
+        let current = null;
+        let minDistance = Infinity;
+        
+        unvisited.forEach(station => {
+          if (distances[station] < minDistance) {
+            minDistance = distances[station];
+            current = station;
+          }
+        });
+        
+        if (current === null || current === end) break;
+        unvisited.delete(current);
+        
+        if (!graph[current]) continue;
+        
+        graph[current].forEach(edge => {
+          if (!unvisited.has(edge.station)) return;
+          
+          let weight = mode === 'time' ? edge.time : edge.distance;
+          
+          // 乗換時間を加算
+          if (previous[current] && segments[current]) {
+            const prevLine = segments[current].line;
+            if (prevLine !== edge.line) {
+              const transferKey1 = `${prevLine} ⇔ ${edge.line}`;
+              const transferKey2 = `${edge.line} ⇔ ${prevLine}`;
+              const transferTime = transferData[current]?.[transferKey1] || 
+                                   transferData[current]?.[transferKey2] || 5;
+              weight += transferTime;
+            }
+          }
+          
+          const newDistance = distances[current] + weight;
+          
+          if (newDistance < distances[edge.station]) {
+            distances[edge.station] = newDistance;
+            previous[edge.station] = current;
+            segments[edge.station] = edge;
+          }
+        });
+      }
+      
+      // 経路を復元
+      if (distances[end] === Infinity) return null;
+      
+      const path = [];
+      let current = end;
+      
+      while (current !== start) {
+        path.unshift(current);
+        current = previous[current];
+      }
+      path.unshift(start);
+      
+      // 詳細な経路情報を構築
+      const routeSegments = [];
+      for (let i = 0; i < path.length - 1; i++) {
+        const seg = segments[path[i + 1]];
+        routeSegments.push(buildRouteSegment(seg.line, path[i], path[i + 1], seg.segmentData));
+      }
+      
+      return {
+        path: path,
+        segments: routeSegments,
+        totalTime: distances[end],
+        totalDistance: routeSegments.reduce((sum, seg) => sum + seg.distance, 0)
+      };
+    }
+
+    // 経路情報を構築
+    function buildRouteSegment(line, fromStation, toStation, segmentData) {
+      let time = segmentData.time;
+      let trainInfo = "";
+      
+      if (segmentData.trains) {
+        const fastestTrain = segmentData.trains.reduce((prev, current) => 
+          prev.time < current.time ? prev : current
+        );
+        time = fastestTrain.time;
+        
+        if (segmentData.trains.length > 1) {
+          const trainTypes = segmentData.trains.map(t => {
+            if (t.extraFare) {
+              return `${t.type}${t.time}分（別途特急料金）`;
+            }
+            return `${t.type}${t.time}分`;
+          }).join('・');
+          trainInfo = ` [${trainTypes}]`;
+        } else if (fastestTrain.type) {
+          trainInfo = ` [${fastestTrain.type}]`;
+        }
+        
+        if (fastestTrain.note) {
+          trainInfo += ` ※${fastestTrain.note}`;
+        }
+      }
+      
+      if (segmentData.note && !trainInfo.includes('※')) {
+        trainInfo += ` ※${segmentData.note}`;
+      }
+      
+      return {
+        line: line,
+        from: fromStation,
+        to: toStation,
+        time: time,
+        distance: segmentData.distance,
+        trainInfo: trainInfo
+      };
+    }
+
+    // 運賃を計算
+    function calculateFare(segments) {
+      const companyDistances = {};
+      
+      segments.forEach(seg => {
+        const company = getCompany(seg.line);
+        if (!companyDistances[company]) {
+          companyDistances[company] = 0;
+        }
+        companyDistances[company] += seg.distance;
+      });
+      
+      let totalFare = 0;
+      Object.entries(companyDistances).forEach(([company, distance]) => {
+        const rates = fareRates[company];
+        if (!rates) return;
+        
+        for (let i = 0; i < rates.length; i++) {
+          if (distance <= rates[i].max) {
+            totalFare += rates[i].fare;
+            break;
+          }
+        }
+      });
+      
+      // メトロ⇔都営の乗継割引
+      if (companyDistances["東京メトロ"] && 
+          (companyDistances["都営地下鉄"] || companyDistances["都営"])) {
+        totalFare -= 70;
+      }
+      
+      return totalFare;
+    }
+
+    // 路線から鉄道会社を判定
+    function getCompany(line) {
+      if (line.includes("東京メトロ")) return "東京メトロ";
+      if (line.includes("都営")) return "都営地下鉄";
+      if (line.includes("JR")) return "JR東日本";
+      if (line.includes("京王")) return "京王電鉄";
+      if (line.includes("小田急")) return "小田急電鉄";
+      if (line.includes("東急")) return "東急電鉄";
+      if (line.includes("西武")) return "西武鉄道";
+      if (line.includes("東武")) return "東武鉄道";
+      if (line.includes("多摩モノレール")) return "多摩都市モノレール";
+      if (line.includes("つくばエクスプレス")) return "つくばエクスプレス";
+      return "その他";
+    }
+
+    // 検索実行
+    function searchRoute() {
+      const departure = document.getElementById('departure').value;
+      const arrival = document.getElementById('arrival').value;
+      
+      if (!departure || !arrival) {
+        alert('出発駅と到着駅を選択してください');
+        return;
+      }
+      
+      if (departure === arrival) {
+        alert('出発駅と到着駅が同じです');
+        return;
+      }
+      
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '<div class="text-center text-gray-600">検索中...</div>';
+      
+      setTimeout(() => {
+        const fastestRoute = findRoute(departure, arrival, 'time');
+        
+        if (!fastestRoute) {
+          resultDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">経路が見つかりませんでした</div>';
+          return;
+        }
+        
+        displayRoute(fastestRoute, '最速ルート');
+      }, 100);
+    }
+
+    // 経路を表示
+    function displayRoute(route, title) {
+      const resultDiv = document.getElementById('result');
+      const fare = calculateFare(route.segments);
+      const transfers = countTransfers(route.segments);
+      
+      let html = `
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-bold text-blue-600 mb-4">${title}</h2>
+          <div class="grid grid-cols-3 gap-4 mb-4 text-center">
+            <div>
+              <div class="text-2xl font-bold text-blue-600">${Math.round(route.totalTime)}分</div>
+              <div class="text-sm text-gray-600">所要時間</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-green-600">${fare}円</div>
+              <div class="text-sm text-gray-600">運賃（IC）</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-purple-600">${transfers}回</div>
+              <div class="text-sm text-gray-600">乗換</div>
+            </div>
+          </div>
+          <div class="border-t pt-4">
+      `;
+      
+      route.segments.forEach((seg, idx) => {
+        if (idx === 0 || seg.line !== route.segments[idx-1].line) {
+          html += `<div class="text-sm font-semibold text-blue-600 mt-2">${seg.line}</div>`;
+        }
+        html += `<div class="text-sm ml-4">
+          ${seg.from} → ${seg.to} (${seg.time}分)${seg.trainInfo || ''}
+        </div>`;
+      });
+      
+      html += `</div></div>`;
+      resultDiv.innerHTML = html;
+    }
+
+    // 乗換回数をカウント
+    function countTransfers(segments) {
+      let count = 0;
+      for (let i = 1; i < segments.length; i++) {
+        if (segments[i].line !== segments[i-1].line) {
+          count++;
+        }
+      }
+      return count;
+    }
+
+    // 初期化
+    window.addEventListener('DOMContentLoaded', () => {
+      initializeStationSelects();
+    });
+  </script>
+</body>
+</html>
