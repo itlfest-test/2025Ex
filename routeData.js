@@ -18,7 +18,7 @@ const routeData = {
     { from: "錦糸町", to: "亀戸", time: 2, distance: 1.5 }
   ],
 
-  "都営新宿線/京王線": [
+  "都営新宿線": [
     { from: "市ヶ谷", to: "九段下", time: 2, distance: 1.3 },
     { from: "神保町", to: "九段下", time: 1, distance: 0.6 },
     { from: "神保町", to: "小川町", time: 2, distance: 0.9 },
@@ -28,9 +28,12 @@ const routeData = {
     { from: "森下", to: "住吉", time: 3, distance: 1.7 },
     { from: "住吉", to: "本八幡", time: 19, distance: 12.3 },
     { from: "市ヶ谷", to: "新宿三丁目", time: 4, distance: 2.9 },
-    { from: "新宿三丁目", to: "新線新宿", time: 1, distance: 0.8 },
+    { from: "新宿三丁目", to: "新線新宿", time: 1, distance: 0.8 }
+  ],
+
+  "京王線": [
     { from: "新線新宿", to: "笹塚", time: 6, distance: 3.6 },
-    { from: "新宿（京王線）", to: "笹塚", time: 4, distance: 3.6 },
+    { from: "新宿", to: "笹塚", time: 4, distance: 3.6 },
     { from: "笹塚", to: "調布", trains: [
         { type: "特急（笹塚で乗換推奨）", time: 13, note: "都営線から直通せず笹塚で特急に乗り換えると速い" },
         { type: "都営直通快速", time: 19 }
@@ -43,7 +46,7 @@ const routeData = {
     { from: "高幡不動", to: "多摩動物公園", time: 3, distance: 2.0 }
   ],
 
-  "東京メトロ南北線/東急目黒線/東急大井町線": [
+  "東京メトロ南北線": [
     { from: "王子", to: "駒込", time: 4, distance: 2.4 },
     { from: "駒込", to: "東大前", time: 3, distance: 2.3 },
     { from: "後楽園", to: "東大前", time: 3, distance: 1.3 },
@@ -52,7 +55,10 @@ const routeData = {
     { from: "市ヶ谷", to: "四ツ谷", time: 1, distance: 1.0 },
     { from: "四ツ谷", to: "永田町", time: 2, distance: 1.5 },
     { from: "永田町", to: "溜池山王", time: 1, distance: 0.7 },
-    { from: "溜池山王", to: "目黒", time: 12, distance: 5.7 },
+    { from: "溜池山王", to: "目黒", time: 12, distance: 5.7 }
+  ],
+
+  "東急目黒線/東急大井町線": [
     { from: "目黒", to: "大岡山", trains: [
         { type: "急行", time: 6 },
         { type: "各停", time: 9 }
@@ -100,7 +106,7 @@ const routeData = {
     { from: "茅場町", to: "門前仲町", time: 3, distance: 1.8 }
   ],
 
-  "東京メトロ千代田線/JR常磐緩行線": [
+  "東京メトロ千代田線": [
     { from: "代々木上原", to: "明治神宮前", time: 4, distance: 2.2 },
     { from: "明治神宮前", to: "表参道", time: 1, distance: 0.9 },
     { from: "表参道", to: "国会議事堂前", time: 6, distance: 3.3 },
@@ -111,10 +117,13 @@ const routeData = {
     { from: "新御茶ノ水", to: "西日暮里", time: 7, distance: 4.3 },
     { from: "西日暮里", to: "町屋", time: 3, distance: 1.7 },
     { from: "町屋", to: "北千住", time: 3, distance: 2.6 },
+  ],
+
+  "JR常磐緩行線": [
     { from: "北千住", to: "綾瀬", time: 3, distance: 2.6 },
     { from: "綾瀬", to: "金町", time: 7, distance: 4.1 }
   ],
-
+  
   "東京メトロ副都心線/東急東横線": [
     { from: "池袋", to: "西早稲田", time: 5, distance: 3.3 },
     { from: "西早稲田", to: "東新宿", time: 1, distance: 0.9 },
