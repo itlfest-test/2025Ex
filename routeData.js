@@ -165,7 +165,7 @@ const routeData = {
     { from: "永福町", to: "吉祥寺", time: 10, distance: 6.7, note: "急行" }
   ],
 
-  "多摩モノレール": [
+  "多摩都市モノレール": [
     { from: "多摩センター", to: "大塚・帝京大学", time: 4, distance: 1.7 },
     { from: "大塚・帝京大学", to: "中央大学・明星大学", time: 1, distance: 0.9 },
     { from: "中央大学・明星大学", to: "多摩動物公園", time: 2, distance: 1.1 },
@@ -205,7 +205,7 @@ const routeData = {
     { from: "高輪ゲートウェイ", to: "品川", time: 2, distance: 0.9 }
   ],
 
-  "JR常磐線（金町方面）": [
+  "JR常磐線": [
     { from: "品川", to: "新橋", time: 5, distance: 4.9 },
     { from: "新橋", to: "東京", time: 3, distance: 1.9 },
     { from: "東京", to: "上野", time: 6, distance: 3.6 },
@@ -283,7 +283,7 @@ const routeData = {
       ], distance: 28.2 }
   ],
 
-  "京浜東北線": [
+  "JR京浜東北線": [
     { from: "大宮", to: "浦和", time: 9, distance: 6.1 },
     { from: "浦和", to: "南浦和", time: 3, distance: 1.7 },
     { from: "南浦和", to: "赤羽", time: 12, distance: 9.3 },
@@ -291,7 +291,7 @@ const routeData = {
     { from: "王子", to: "田端", time: 5, distance: 2.8 }
   ],
 
-  "銀座線": [
+  "東京メトロ銀座線": [
     { from: "渋谷", to: "表参道", time: 2, distance: 1.2 },
     { from: "表参道", to: "青山一丁目", time: 4, distance: 1.4 },
     { from: "青山一丁目", to: "赤坂見附", time: 2, distance: 1.3 },
@@ -321,7 +321,7 @@ const routeData = {
     { from: "五反田", to: "中延", time: 4, distance: 2.7 }
   ],
 
-  "中央線快速": [
+  "JR中央線快速": [
     { from: "東京", to: "神田", time: 1, distance: 1.3 },
     { from: "神田", to: "御茶ノ水", time: 1, distance: 1.3 },
     { from: "御茶ノ水", to: "四谷", time: 4, distance: 4.0 },
@@ -345,7 +345,7 @@ const routeData = {
     { from: "亀戸", to: "曳舟", time: 8, distance: 3.4 }
   ],
 
-  "総武快速線": [
+  "JR総武快速線": [
     { from: "東京", to: "新日本橋", time: 3, distance: 1.2 },
     { from: "新日本橋", to: "馬喰町", time: 2, distance: 1.1 },
     { from: "馬喰町", to: "錦糸町", time: 4, distance: 2.5 },
@@ -359,13 +359,13 @@ const routeData = {
     { from: "練馬", to: "所沢", time: 23, distance: 18.8 }
   ],
 
-  "上野東京ライン": [
+  "JR宇都宮線・高崎線": [
     { from: "上野", to: "赤羽", time: 12, distance: 9.8 },
     { from: "赤羽", to: "浦和", time: 9, distance: 11.0 },
     { from: "浦和", to: "大宮", time: 8, distance: 6.1 }
   ],
 
-  "湘南新宿ライン": [
+  "JR湘南新宿ライン": [
     { from: "大宮", to: "浦和", time: 6, distance: 6.1 },
     { from: "浦和", to: "赤羽", time: 8, distance: 11.0 },
     { from: "赤羽", to: "池袋", time: 10, distance: 5.5 },
@@ -376,7 +376,7 @@ const routeData = {
     { from: "大崎", to: "武蔵小杉", time: 9, distance: 12.0 }
   ],
 
-  "埼京線": [
+  "JR埼京線": [
     { from: "大宮", to: "武蔵浦和", time: 11, distance: 7.4 },
     { from: "武蔵浦和", to: "赤羽", trains: [
         { type: "快速", time: 10 },
@@ -407,7 +407,7 @@ const routeData = {
     { from: "新百合ヶ丘", to: "小田急多摩センター", time: 12, distance: 9.1 }
   ],
 
-  "南武線": [
+  "JR南武線": [
     { from: "川崎", to: "武蔵小杉", trains: [
         { type: "各停", time: 12 },
         { type: "快速", time: 8 }
@@ -432,7 +432,7 @@ const routeData = {
       ], distance: 6.7 }
   ],
 
-  "京葉線・武蔵野線": [
+  "JR京葉線・武蔵野線": [
     { from: "東京", to: "八丁堀", time: 2, distance: 1.2 },
     { from: "八丁堀", to: "新木場", time: 8, distance: 6.2 },
     { from: "新木場", to: "舞浜", time: 6, distance: 5.3 },
