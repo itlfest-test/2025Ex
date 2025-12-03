@@ -13,15 +13,15 @@
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">出発駅</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">出発地</label>
           <select id="departure" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="">駅を選択してください</option>
+            <option value="">選択してください</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">到着駅</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">到着地</label>
           <select id="arrival" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="">駅を選択してください</option>
+            <option value="">選択してください</option>
           </select>
         </div>
       </div>
@@ -42,27 +42,48 @@
   
   <!-- メインスクリプト -->
   <script>
-    // 全駅リストを生成
-    function getAllStations() {
-      const stations = new Set();
-      Object.values(routeData).forEach(line => {
-        line.forEach(segment => {
-          stations.add(segment.from);
-          stations.add(segment.to);
-        });
-      });
-      return Array.from(stations).sort();
-    }
+    // キャンパス選択肢
+    const destinations = [
+      { name: "中央大学 市ヶ谷田町キャンパス", station: "市ヶ谷" },
+      { name: "中央大学 後楽園キャンパス", station: "後楽園" },
+      { name: "中央大学 茗荷谷キャンパス", station: "茗荷谷" },
+      { name: "中央大学 多摩キャンパス", station: "中央大学・明星大学" },
+      { name: "東京理科大学 神楽坂キャンパス", station: "飯田橋" },
+      { name: "東京理科大学 葛飾キャンパス", station: "金町" },
+      { name: "東京理科大学 野田キャンパス", station: "運河" },
+      { name: "法政大学 市ヶ谷キャンパス", station: "飯田橋" },
+      { name: "上智大学 四谷キャンパス", station: "四ツ谷" },
+      { name: "日本大学 水道橋キャンパス", station: "水道橋" },
+      { name: "明治大学 和泉キャンパス", station: "明大前" },
+      { name: "東京大学 駒場キャンパス", station: "駒場東大前" },
+      { name: "早稲田大学 早稲田キャンパス", station: "早稲田" },
+      { name: "早稲田大学 西早稲田キャンパス", station: "西早稲田" },
+      { name: "東京科学大学 湯島キャンパス", station: "御茶ノ水" },
+      { name: "東京科学大学 大岡山キャンパス", station: "大岡山" },
+      { name: "武蔵野美術大学 鷹の台キャンパス", station: "鷹の台" },
+      { name: "――――――――――", station: "" },
+      { name: "東京ディズニーリゾート（舞浜）", station: "舞浜" },
+      { name: "東京駅（新幹線）", station: "東京" }
+    ];
 
     // 駅選択ドロップダウンを初期化
     function initializeStationSelects() {
-      const stations = getAllStations();
       const departureSelect = document.getElementById('departure');
       const arrivalSelect = document.getElementById('arrival');
       
-      stations.forEach(station => {
-        departureSelect.add(new Option(station, station));
-        arrivalSelect.add(new Option(station, station));
+      destinations.forEach(dest => {
+        if (dest.station === "") {
+          // 区切り線
+          const opt1 = new Option(dest.name, "", true, false);
+          opt1.disabled = true;
+          const opt2 = new Option(dest.name, "", true, false);
+          opt2.disabled = true;
+          departureSelect.add(opt1);
+          arrivalSelect.add(opt2);
+        } else {
+          departureSelect.add(new Option(dest.name, dest.station));
+          arrivalSelect.add(new Option(dest.name, dest.station));
+        }
       });
     }
 
@@ -222,7 +243,7 @@
       };
     }
 
-    // 運賃を計算
+    // 運賃を計算（修正版）
     function calculateFare(segments) {
       const companyDistances = {};
       
@@ -237,7 +258,10 @@
       let totalFare = 0;
       Object.entries(companyDistances).forEach(([company, distance]) => {
         const rates = fareRates[company];
-        if (!rates) return;
+        if (!rates) {
+          console.warn(`運賃データがありません: ${company}`);
+          return;
+        }
         
         for (let i = 0; i < rates.length; i++) {
           if (distance <= rates[i].max) {
@@ -248,16 +272,19 @@
       });
       
       // メトロ⇔都営の乗継割引
-      if (companyDistances["東京メトロ"] && 
-          (companyDistances["都営地下鉄"] || companyDistances["都営"])) {
+      if (companyDistances["東京メトロ"] && companyDistances["都営地下鉄"]) {
         totalFare -= 70;
       }
       
       return totalFare;
     }
 
-    // 路線から鉄道会社を判定
+    // 路線から鉄道会社を判定（修正版）
     function getCompany(line) {
+      // 完全一致を優先
+      if (line === "都営新宿線/京王線") return "都営地下鉄"; // 都営区間として扱う
+      
+      // 部分一致
       if (line.includes("東京メトロ")) return "東京メトロ";
       if (line.includes("都営")) return "都営地下鉄";
       if (line.includes("JR")) return "JR東日本";
@@ -266,8 +293,10 @@
       if (line.includes("東急")) return "東急電鉄";
       if (line.includes("西武")) return "西武鉄道";
       if (line.includes("東武")) return "東武鉄道";
-      if (line.includes("多摩モノレール")) return "多摩都市モノレール";
+      if (line.includes("多摩モノレール") || line.includes("多摩都市モノレール")) return "多摩都市モノレール";
       if (line.includes("つくばエクスプレス")) return "つくばエクスプレス";
+      
+      console.warn(`会社不明: ${line}`);
       return "その他";
     }
 
@@ -277,12 +306,12 @@
       const arrival = document.getElementById('arrival').value;
       
       if (!departure || !arrival) {
-        alert('出発駅と到着駅を選択してください');
+        alert('出発地と到着地を選択してください');
         return;
       }
       
       if (departure === arrival) {
-        alert('出発駅と到着駅が同じです');
+        alert('出発地と到着地が同じです');
         return;
       }
       
@@ -297,15 +326,35 @@
           return;
         }
         
-        displayRoute(fastestRoute, '最速ルート');
+        displayRoute(fastestRoute, '最速ルート', departure, arrival);
       }, 100);
     }
 
-    // 経路を表示
-    function displayRoute(route, title) {
+    // 簡易版経路表示を生成
+    function getSimpleRoute(segments, start, end) {
+      if (segments.length === 0) return [];
+      
+      const result = [start];
+      let currentLine = segments[0].line;
+      
+      for (let i = 0; i < segments.length; i++) {
+        // 路線が変わったら乗換駅を追加
+        if (segments[i].line !== currentLine) {
+          result.push(segments[i].from);
+          currentLine = segments[i].line;
+        }
+      }
+      
+      result.push(end);
+      return result;
+    }
+
+    // 経路を表示（簡易版→詳細版切り替え）
+    function displayRoute(route, title, start, end) {
       const resultDiv = document.getElementById('result');
       const fare = calculateFare(route.segments);
       const transfers = countTransfers(route.segments);
+      const simpleStations = getSimpleRoute(route.segments, start, end);
       
       let html = `
         <div class="bg-white rounded-lg shadow-md p-6">
@@ -324,7 +373,27 @@
               <div class="text-sm text-gray-600">乗換</div>
             </div>
           </div>
-          <div class="border-t pt-4">
+          
+          <!-- 簡易版表示 -->
+          <div id="simple-view" class="border-t pt-4">
+            <div class="flex items-center justify-center gap-2 text-lg">
+              ${simpleStations.map((station, idx) => {
+                if (idx === simpleStations.length - 1) {
+                  return `<span class="font-bold text-blue-600">${station}</span>`;
+                } else {
+                  return `<span class="font-bold text-blue-600">${station}</span> <span class="text-gray-400">→</span>`;
+                }
+              }).join('')}
+            </div>
+            <div class="text-center mt-4">
+              <button onclick="toggleDetail()" class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-md transition">
+                詳細を表示 ▼
+              </button>
+            </div>
+          </div>
+          
+          <!-- 詳細版表示（初期非表示） -->
+          <div id="detail-view" class="border-t pt-4 hidden">
       `;
       
       route.segments.forEach((seg, idx) => {
@@ -336,8 +405,50 @@
         </div>`;
       });
       
-      html += `</div></div>`;
+      // 最終駅の乗車位置情報
+      const campusInfo = campusData.find(c => c.stations.some(s => s.station === end));
+      if (campusInfo) {
+        const stationInfo = campusInfo.stations.find(s => s.station === end);
+        if (stationInfo) {
+          html += `
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div class="font-bold text-blue-800 mb-2">🚃 乗車位置情報</div>
+              <div class="text-sm text-gray-700">
+                <div><strong>乗車位置:</strong> ${stationInfo.door}</div>
+                <div><strong>出口:</strong> ${stationInfo.exit}</div>
+                <div><strong>キャンパスまで:</strong> 徒歩約${stationInfo.walkTotal}分</div>
+                ${stationInfo.note ? `<div class="text-xs text-gray-600 mt-1">※ ${stationInfo.note}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }
+      }
+      
+      html += `
+            <div class="text-center mt-4">
+              <button onclick="toggleDetail()" class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-md transition">
+                簡易表示に戻す ▲
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
       resultDiv.innerHTML = html;
+    }
+
+    // 詳細表示切り替え
+    function toggleDetail() {
+      const simpleView = document.getElementById('simple-view');
+      const detailView = document.getElementById('detail-view');
+      
+      if (detailView.classList.contains('hidden')) {
+        simpleView.classList.add('hidden');
+        detailView.classList.remove('hidden');
+      } else {
+        simpleView.classList.remove('hidden');
+        detailView.classList.add('hidden');
+      }
     }
 
     // 乗換回数をカウント
