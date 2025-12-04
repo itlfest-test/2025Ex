@@ -281,9 +281,6 @@
 
     // 路線から鉄道会社を判定（修正版）
     function getCompany(line) {
-      // 完全一致を優先
-      if (line === "都営新宿線/京王線") return "都営地下鉄"; // 都営区間として扱う
-      
       // 部分一致
       if (line.includes("東京メトロ")) return "東京メトロ";
       if (line.includes("都営")) return "都営地下鉄";
@@ -349,6 +346,27 @@
       return result;
     }
 
+    // 路線セクションを生成（始発駅→終着駅のみ表示）
+    function generateLineSection(lineName, segments) {
+      if (segments.length === 0) return '';
+      
+      const firstSeg = segments[0];
+      const lastSeg = segments[segments.length - 1];
+      const totalTime = segments.reduce((sum, seg) => sum + seg.time, 0);
+      
+      // 列車情報を取得（最初のセグメントから）
+      let trainInfo = firstSeg.trainInfo || '';
+      
+      return `
+        <div class="mb-3">
+          <div class="text-sm font-semibold text-blue-600">${lineName}</div>
+          <div class="text-sm ml-4">
+            ${firstSeg.from} → ${lastSeg.to} (約${totalTime}分)${trainInfo}
+          </div>
+        </div>
+      `;
+    }
+
     // 経路を表示（簡易版→詳細版切り替え）
     function displayRoute(route, title, start, end) {
       const resultDiv = document.getElementById('result');
@@ -366,7 +384,7 @@
             </div>
             <div>
               <div class="text-2xl font-bold text-green-600">${fare}円</div>
-              <div class="text-sm text-gray-600">運賃（IC）</div>
+              <div class="text-sm text-gray-600">運賃(IC)</div>
             </div>
             <div>
               <div class="text-2xl font-bold text-purple-600">${transfers}回</div>
@@ -376,7 +394,7 @@
           
           <!-- 簡易版表示 -->
           <div id="simple-view" class="border-t pt-4">
-            <div class="flex items-center justify-center gap-2 text-lg">
+            <div class="flex items-center justify-center gap-2 text-lg flex-wrap">
               ${simpleStations.map((station, idx) => {
                 if (idx === simpleStations.length - 1) {
                   return `<span class="font-bold text-blue-600">${station}</span>`;
@@ -396,14 +414,28 @@
           <div id="detail-view" class="border-t pt-4 hidden">
       `;
       
-      route.segments.forEach((seg, idx) => {
-        if (idx === 0 || seg.line !== route.segments[idx-1].line) {
-          html += `<div class="text-sm font-semibold text-blue-600 mt-2">${seg.line}</div>`;
+      // 詳細版：路線ごとにまとめて表示
+      let currentLine = null;
+      let lineSegments = [];
+      
+      for (let i = 0; i < route.segments.length; i++) {
+        const seg = route.segments[i];
+        
+        // 路線が変わった
+        if (currentLine !== null && seg.line !== currentLine) {
+          // 前の路線の情報を出力
+          html += generateLineSection(currentLine, lineSegments);
+          lineSegments = [];
         }
-        html += `<div class="text-sm ml-4">
-          ${seg.from} → ${seg.to} (${seg.time}分)${seg.trainInfo || ''}
-        </div>`;
-      });
+        
+        currentLine = seg.line;
+        lineSegments.push(seg);
+      }
+      
+      // 最後の路線
+      if (lineSegments.length > 0) {
+        html += generateLineSection(currentLine, lineSegments);
+      }
       
       // 最終駅の乗車位置情報
       const campusInfo = campusData.find(c => c.stations.some(s => s.station === end));
