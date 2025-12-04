@@ -58,17 +58,19 @@ const routeData = {
     { from: "溜池山王", to: "目黒", time: 12, distance: 5.7 }
   ],
 
-  "東急目黒線/東急大井町線": [
+  "東急目黒線東急大井町線": [
     { from: "目黒", to: "大岡山", trains: [
         { type: "急行", time: 6 },
         { type: "各停", time: 9 }
       ], distance: 4.3 },
-    { from: "大岡山", to: "武蔵小杉", time: 9, distance: 5.3 },
+    { from: "大岡山", to: "武蔵小杉", time: 9, distance: 5.3 }
+  ],
+
+  "東急大井町線": [
     { from: "大岡山", to: "自由が丘", time: 3, distance: 1.5 },
     { from: "大岡山", to: "中延", time: 6, distance: 2.7 },
     { from: "中延", to: "大井町", time: 4, distance: 2.1 }
   ],
-
   "東京メトロ有楽町線": [
     { from: "有楽町", to: "永田町", time: 4, distance: 1.9 },
     { from: "市ヶ谷", to: "永田町", time: 3, distance: 1.8 },
@@ -116,7 +118,7 @@ const routeData = {
     { from: "大手町", to: "新御茶ノ水", time: 2, distance: 1.3 },
     { from: "新御茶ノ水", to: "西日暮里", time: 7, distance: 4.3 },
     { from: "西日暮里", to: "町屋", time: 3, distance: 1.7 },
-    { from: "町屋", to: "北千住", time: 3, distance: 2.6 },
+    { from: "町屋", to: "北千住", time: 3, distance: 2.6 }
   ],
 
   "JR常磐緩行線": [
@@ -124,12 +126,15 @@ const routeData = {
     { from: "綾瀬", to: "金町", time: 7, distance: 4.1 }
   ],
   
-  "東京メトロ副都心線/東急東横線": [
+  "東京メトロ副都心線": [
     { from: "池袋", to: "西早稲田", time: 5, distance: 3.3 },
     { from: "西早稲田", to: "東新宿", time: 1, distance: 0.9 },
     { from: "東新宿", to: "新宿三丁目", time: 2, distance: 1.1 },
     { from: "新宿三丁目", to: "明治神宮前", time: 4, distance: 2.6 },
-    { from: "明治神宮前", to: "渋谷", time: 2, distance: 1.0 },
+    { from: "明治神宮前", to: "渋谷", time: 2, distance: 1.0 }
+  ],
+
+  "東急東横線": [
     { from: "渋谷", to: "中目黒", time: 5, distance: 2.2 },
     { from: "中目黒", to: "自由が丘", time: 6, distance: 4.8 },
     { from: "自由が丘", to: "武蔵小杉", time: 6, distance: 3.8 }
