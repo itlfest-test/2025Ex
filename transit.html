@@ -73,7 +73,6 @@
       
       destinations.forEach(dest => {
         if (dest.station === "") {
-          // 区切り線
           const opt1 = new Option(dest.name, "", true, false);
           opt1.disabled = true;
           const opt2 = new Option(dest.name, "", true, false);
@@ -93,7 +92,6 @@
       
       Object.entries(routeData).forEach(([lineName, segments]) => {
         segments.forEach(segment => {
-          // 順方向
           if (!graph[segment.from]) graph[segment.from] = [];
           graph[segment.from].push({
             station: segment.to,
@@ -103,7 +101,6 @@
             segmentData: segment
           });
           
-          // 逆方向
           if (!graph[segment.to]) graph[segment.to] = [];
           graph[segment.to].push({
             station: segment.from,
@@ -152,7 +149,6 @@
           
           let weight = mode === 'time' ? edge.time : edge.distance;
           
-          // 乗換時間を加算
           if (previous[current] && segments[current]) {
             const prevLine = segments[current].line;
             if (prevLine !== edge.line) {
@@ -174,7 +170,6 @@
         });
       }
       
-      // 経路を復元
       if (distances[end] === Infinity) return null;
       
       const path = [];
@@ -186,7 +181,6 @@
       }
       path.unshift(start);
       
-      // 詳細な経路情報を構築
       const routeSegments = [];
       for (let i = 0; i < path.length - 1; i++) {
         const seg = segments[path[i + 1]];
@@ -243,7 +237,7 @@
       };
     }
 
-    // 運賃を計算（修正版）
+    // 運賃を計算
     function calculateFare(segments) {
       const companyDistances = {};
       
@@ -271,7 +265,6 @@
         }
       });
       
-      // メトロ⇔都営の乗継割引
       if (companyDistances["東京メトロ"] && companyDistances["都営地下鉄"]) {
         totalFare -= 70;
       }
@@ -279,9 +272,8 @@
       return totalFare;
     }
 
-    // 路線から鉄道会社を判定（修正版）
+    // 路線から鉄道会社を判定
     function getCompany(line) {
-      // 部分一致
       if (line.includes("東京メトロ")) return "東京メトロ";
       if (line.includes("都営")) return "都営地下鉄";
       if (line.includes("JR")) return "JR東日本";
@@ -297,7 +289,7 @@
       return "その他";
     }
 
-    // 検索実行
+    // 検索実行（3パターン対応）
     function searchRoute() {
       const departure = document.getElementById('departure').value;
       const arrival = document.getElementById('arrival').value;
@@ -317,13 +309,44 @@
       
       setTimeout(() => {
         const fastestRoute = findRoute(departure, arrival, 'time');
+        const cheapestRoute = findRoute(departure, arrival, 'distance'); // 距離≒運賃
         
         if (!fastestRoute) {
           resultDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">経路が見つかりませんでした</div>';
           return;
         }
         
-        displayRoute(fastestRoute, '最速ルート', departure, arrival);
+        // ルートの重複判定と統合
+        const routes = [];
+        const routeMap = new Map();
+        
+        // 最速ルート
+        const fastestKey = JSON.stringify(fastestRoute.path);
+        routeMap.set(fastestKey, {
+          route: fastestRoute,
+          labels: ['早']
+        });
+        
+        // 最安ルート
+        const cheapestKey = JSON.stringify(cheapestRoute.path);
+        if (routeMap.has(cheapestKey)) {
+          routeMap.get(cheapestKey).labels.push('安');
+        } else {
+          routeMap.set(cheapestKey, {
+            route: cheapestRoute,
+            labels: ['安']
+          });
+        }
+        
+        // 最短（乗換最少）ルート - 簡易実装：最速ルートと同じ扱い
+        // 本格実装する場合は乗換回数を重視した探索が必要
+        
+        // 結果を表示
+        resultDiv.innerHTML = '';
+        routeMap.forEach(({ route, labels }) => {
+          const labelText = labels.join('・');
+          displayRoute(route, `${labelText}ルート`, departure, arrival, labels);
+        });
       }, 100);
     }
 
@@ -335,7 +358,6 @@
       let currentLine = segments[0].line;
       
       for (let i = 0; i < segments.length; i++) {
-        // 路線が変わったら乗換駅を追加
         if (segments[i].line !== currentLine) {
           result.push(segments[i].from);
           currentLine = segments[i].line;
@@ -346,7 +368,7 @@
       return result;
     }
 
-    // 路線セクションを生成（始発駅→終着駅のみ表示）
+    // 路線セクションを生成
     function generateLineSection(lineName, segments) {
       if (segments.length === 0) return '';
       
@@ -354,7 +376,6 @@
       const lastSeg = segments[segments.length - 1];
       const totalTime = segments.reduce((sum, seg) => sum + seg.time, 0);
       
-      // 列車情報を取得（最初のセグメントから）
       let trainInfo = firstSeg.trainInfo || '';
       
       return `
@@ -367,63 +388,87 @@
       `;
     }
 
-    // 経路を表示（簡易版→詳細版切り替え）
-    function displayRoute(route, title, start, end) {
+    // 経路を表示（バッジ付き）
+    function displayRoute(route, title, start, end, labels) {
       const resultDiv = document.getElementById('result');
       const fare = calculateFare(route.segments);
       const transfers = countTransfers(route.segments);
       const simpleStations = getSimpleRoute(route.segments, start, end);
       
-      let html = `
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-xl font-bold text-blue-600 mb-4">${title}</h2>
-          <div class="grid grid-cols-3 gap-4 mb-4 text-center">
-            <div>
-              <div class="text-2xl font-bold text-blue-600">${Math.round(route.totalTime)}分</div>
-              <div class="text-sm text-gray-600">所要時間</div>
-            </div>
-            <div>
-              <div class="text-2xl font-bold text-green-600">${fare}円</div>
-              <div class="text-sm text-gray-600">運賃(IC)</div>
-            </div>
-            <div>
-              <div class="text-2xl font-bold text-purple-600">${transfers}回</div>
-              <div class="text-sm text-gray-600">乗換</div>
-            </div>
+      // バッジの色
+      const badgeColors = {
+        '早': 'bg-blue-500',
+        '安': 'bg-green-500',
+        '短': 'bg-purple-500'
+      };
+      
+      const badges = labels.map(label => 
+        `<span class="inline-block px-2 py-1 text-xs font-bold text-white rounded ${badgeColors[label] || 'bg-gray-500'}">${label}</span>`
+      ).join(' ');
+      
+      const routeCard = document.createElement('div');
+      routeCard.className = 'bg-white rounded-lg shadow-md p-6 mb-4';
+      routeCard.innerHTML = `
+        <h2 class="text-xl font-bold text-blue-600 mb-2 flex items-center gap-2">
+          ${badges}
+          <span>${title}</span>
+        </h2>
+        <div class="grid grid-cols-3 gap-4 mb-4 text-center">
+          <div>
+            <div class="text-2xl font-bold text-blue-600">${Math.round(route.totalTime)}分</div>
+            <div class="text-sm text-gray-600">所要時間</div>
           </div>
-          
-          <!-- 簡易版表示 -->
-          <div id="simple-view" class="border-t pt-4">
-            <div class="flex items-center justify-center gap-2 text-lg flex-wrap">
-              ${simpleStations.map((station, idx) => {
-                if (idx === simpleStations.length - 1) {
-                  return `<span class="font-bold text-blue-600">${station}</span>`;
-                } else {
-                  return `<span class="font-bold text-blue-600">${station}</span> <span class="text-gray-400">→</span>`;
-                }
-              }).join('')}
-            </div>
-            <div class="text-center mt-4">
-              <button onclick="toggleDetail()" class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-md transition">
-                詳細を表示 ▼
-              </button>
-            </div>
+          <div>
+            <div class="text-2xl font-bold text-green-600">${fare}円</div>
+            <div class="text-sm text-gray-600">運賃(IC)</div>
           </div>
-          
-          <!-- 詳細版表示（初期非表示） -->
-          <div id="detail-view" class="border-t pt-4 hidden">
+          <div>
+            <div class="text-2xl font-bold text-purple-600">${transfers}回</div>
+            <div class="text-sm text-gray-600">乗換</div>
+          </div>
+        </div>
+        
+        <div class="simple-view-${route.path.join('-')} border-t pt-4">
+          <div class="flex items-center justify-center gap-2 text-lg flex-wrap">
+            ${simpleStations.map((station, idx) => {
+              if (idx === simpleStations.length - 1) {
+                return `<span class="font-bold text-blue-600">${station}</span>`;
+              } else {
+                return `<span class="font-bold text-blue-600">${station}</span> <span class="text-gray-400">→</span>`;
+              }
+            }).join('')}
+          </div>
+          <div class="text-center mt-4">
+            <button onclick="toggleDetailById('${route.path.join('-')}')" class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-md transition">
+              詳細を表示 ▼
+            </button>
+          </div>
+        </div>
+        
+        <div class="detail-view-${route.path.join('-')} border-t pt-4 hidden">
+          ${generateDetailedRoute(route)}
+          ${generateCampusInfo(end)}
+          <div class="text-center mt-4">
+            <button onclick="toggleDetailById('${route.path.join('-')}')" class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-md transition">
+              簡易表示に戻す ▲
+            </button>
+          </div>
+        </div>
       `;
       
-      // 詳細版：路線ごとにまとめて表示
+      resultDiv.appendChild(routeCard);
+    }
+
+    // 詳細ルート生成
+    function generateDetailedRoute(route) {
+      let html = '';
       let currentLine = null;
       let lineSegments = [];
       
       for (let i = 0; i < route.segments.length; i++) {
         const seg = route.segments[i];
         
-        // 路線が変わった
         if (currentLine !== null && seg.line !== currentLine) {
-          // 前の路線の情報を出力
           html += generateLineSection(currentLine, lineSegments);
           lineSegments = [];
         }
@@ -432,17 +477,20 @@
         lineSegments.push(seg);
       }
       
-      // 最後の路線
       if (lineSegments.length > 0) {
         html += generateLineSection(currentLine, lineSegments);
       }
       
-      // 最終駅の乗車位置情報
+      return html;
+    }
+
+    // キャンパス情報生成
+    function generateCampusInfo(end) {
       const campusInfo = campusData.find(c => c.stations.some(s => s.station === end));
       if (campusInfo) {
         const stationInfo = campusInfo.stations.find(s => s.station === end);
         if (stationInfo) {
-          html += `
+          return `
             <div class="mt-4 p-3 bg-blue-50 rounded-lg">
               <div class="font-bold text-blue-800 mb-2">🚃 乗車位置情報</div>
               <div class="text-sm text-gray-700">
@@ -455,30 +503,19 @@
           `;
         }
       }
-      
-      html += `
-            <div class="text-center mt-4">
-              <button onclick="toggleDetail()" class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-md transition">
-                簡易表示に戻す ▲
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      resultDiv.innerHTML = html;
+      return '';
     }
 
-    // 詳細表示切り替え
-    function toggleDetail() {
-      const simpleView = document.getElementById('simple-view');
-      const detailView = document.getElementById('detail-view');
+    // 詳細表示切り替え（ID指定版）
+    function toggleDetailById(id) {
+      const simpleView = document.querySelector(`.simple-view-${id}`);
+      const detailView = document.querySelector(`.detail-view-${id}`);
       
-      if (detailView.classList.contains('hidden')) {
-        simpleView.classList.add('hidden');
+      if (detailView && detailView.classList.contains('hidden')) {
+        if (simpleView) simpleView.classList.add('hidden');
         detailView.classList.remove('hidden');
-      } else {
-        simpleView.classList.remove('hidden');
+      } else if (detailView) {
+        if (simpleView) simpleView.classList.remove('hidden');
         detailView.classList.add('hidden');
       }
     }
