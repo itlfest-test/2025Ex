@@ -8,7 +8,7 @@ const fareRates = {
     { max: 40, fare: 330 }
   ],
   
-  "都営": [
+  "都営地下鉄": [
     { max: 4, fare: 180 },
     { max: 8, fare: 220 },
     { max: 12, fare: 270 },
@@ -17,7 +17,7 @@ const fareRates = {
     { max: 40, fare: 430 }
   ],
   
-  "JR": [
+  "JR東日本": [
     { max: 3, fare: 155 },
     { max: 6, fare: 199 },
     { max: 10, fare: 209 },
@@ -29,7 +29,7 @@ const fareRates = {
     { max: 40, fare: 616 }
   ],
   
-  "京王": [
+  "京王電鉄": [
     { max: 4, fare: 136 },
     { max: 8, fare: 167 },
     { max: 12, fare: 209 },
@@ -43,7 +43,7 @@ const fareRates = {
     { max: 50, fare: 545 }
   ],
   
-  "小田急": [
+  "小田急電鉄": [
     { max: 4, fare: 136 },
     { max: 8, fare: 178 },
     { max: 12, fare: 220 },
@@ -56,7 +56,7 @@ const fareRates = {
     { max: 40, fare: 514 }
   ],
   
-  "東急": [
+  "東急電鉄": [
     { max: 3, fare: 136 },
     { max: 7, fare: 157 },
     { max: 11, fare: 199 },
@@ -68,7 +68,7 @@ const fareRates = {
     { max: 40, fare: 388 }
   ],
   
-  "西武": [
+  "西武鉄道": [
     { max: 4, fare: 169 },
     { max: 8, fare: 207 },
     { max: 12, fare: 245 },
@@ -83,7 +83,7 @@ const fareRates = {
     { max: 48, fare: 592 }
   ],
   
-  "東武": [
+  "東武鉄道": [
     { max: 3, fare: 146 },
     { max: 7, fare: 178 },
     { max: 11, fare: 220 },
