@@ -1,11 +1,12 @@
 // ============================
-// script.js - 修正版（学祭スライダー・情報ページ追加）
+// script.js - 修正版（Claude API要約機能追加）
 // ============================
 
 // --- constants / keys
 const FAVORITES_KEY = "favorites";
 const HISTORY_KEY = "favorite_history";
 const HISTORY_MAX = 15;
+const SUMMARIES_KEY = "event_summaries"; // 要約キャッシュ用
 
 // --- helper: unified data accessor
 function getAllEvents() {
@@ -26,8 +27,8 @@ function evCategory(ev) {
 function evField(ev) {
   return ev["分野"] || ev.field || "";
 }
-function evExcerpt(ev) {
-  return (ev["説明"] || ev.description || "").slice(0, 140);
+function evDescription(ev) {
+  return ev["説明"] || ev.description || "";
 }
 function evStartDateTime(ev) {
   return ev["start_datetime"] || ev.start_datetime || "";
@@ -69,6 +70,62 @@ function formatDateTime(startStr, endStr) {
     return result;
   } catch (e) {
     return startStr;
+  }
+}
+
+// ============================
+// 🤖 Claude APIで説明文を要約
+// ============================
+async function getSummary(eventId, fullDescription) {
+  // キャッシュチェック
+  const cache = JSON.parse(localStorage.getItem(SUMMARIES_KEY) || "{}");
+  if (cache[eventId]) {
+    return cache[eventId];
+  }
+
+  // 説明文が短い場合はそのまま返す
+  if (fullDescription.length <= 60) {
+    return fullDescription;
+  }
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [
+          {
+            role: "user",
+            content: `以下のイベント説明文を、1-2行（30-50文字程度）に要約してください。魅力的で簡潔に。
+
+説明文：
+${fullDescription}
+
+要約のみを出力してください。`
+          }
+        ],
+      })
+    });
+
+    const data = await response.json();
+    const summary = data.content
+      .filter(item => item.type === "text")
+      .map(item => item.text)
+      .join("")
+      .trim();
+
+    // キャッシュに保存
+    cache[eventId] = summary;
+    localStorage.setItem(SUMMARIES_KEY, JSON.stringify(cache));
+
+    return summary;
+  } catch (error) {
+    console.error("要約生成エラー:", error);
+    return fullDescription.slice(0, 50) + "...";
   }
 }
 
@@ -388,33 +445,83 @@ function renderResults(list) {
 }
 
 // ============================
-// カード生成
+// カード生成（要約版）
 // ============================
-function createEventCard(ev) {
+async function createEventCard(ev) {
   const card = document.createElement("article");
   card.className = "result-card";
+  card.dataset.eventId = ev.id;
 
   const favs = loadFavoritesArray();
   const isFav = favs.includes(ev.id);
   
   const dateTimeStr = formatDateTime(evStartDateTime(ev), evEndDateTime(ev));
   const placeStr = evPlace(ev);
+  const fullDescription = evDescription(ev);
+  const university = evUniversity(ev);
+
+  // 要約を生成（非同期）
+  const summary = await getSummary(ev.id, fullDescription);
 
   card.innerHTML = `
     <button class="fav-btn ${isFav ? "active" : ""}" data-id="${ev.id}" aria-label="お気に入り">
       ⭐
     </button>
     <h4>${escapeHtml(evTitle(ev))}</h4>
-    <p class="muted">${escapeHtml(evExcerpt(ev))}</p>
+    <p class="muted event-summary">${escapeHtml(summary)}</p>
+    <div class="event-details hidden">
+      <p><strong>詳細：</strong>${escapeHtml(fullDescription)}</p>
+      ${dateTimeStr ? `<p><strong>日時：</strong>${escapeHtml(dateTimeStr)}</p>` : ''}
+      ${placeStr ? `<p><strong>場所：</strong>${escapeHtml(placeStr)}</p>` : ''}
+    </div>
+    <button class="toggle-details-btn">詳細を見る ▼</button>
     <div class="card-meta">
-      ${escapeHtml(evUniversity(ev))} / ${escapeHtml(evCategory(ev))} / ${escapeHtml(evField(ev))}<br>
-      ${escapeHtml(dateTimeStr)}${placeStr ? ' @ ' + escapeHtml(placeStr) : ''}
+      <span class="university-tag" style="cursor: pointer; text-decoration: underline;">${escapeHtml(university)}</span> / ${escapeHtml(evCategory(ev))} / ${escapeHtml(evField(ev))}
     </div>
   `;
 
-  const btn = card.querySelector(".fav-btn");
-  if (btn) {
-    btn.addEventListener("click", () => toggleFavorite(ev));
+  // お気に入りボタン
+  const favBtn = card.querySelector(".fav-btn");
+  if (favBtn) {
+    favBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFavorite(ev);
+    });
+  }
+
+  // 詳細表示切り替え
+  const toggleBtn = card.querySelector(".toggle-details-btn");
+  const detailsDiv = card.querySelector(".event-details");
+  const summaryP = card.querySelector(".event-summary");
+  
+  if (toggleBtn && detailsDiv && summaryP) {
+    toggleBtn.addEventListener("click", () => {
+      const isHidden = detailsDiv.classList.contains("hidden");
+      if (isHidden) {
+        detailsDiv.classList.remove("hidden");
+        summaryP.classList.add("hidden");
+        toggleBtn.textContent = "要約を見る ▲";
+      } else {
+        detailsDiv.classList.add("hidden");
+        summaryP.classList.remove("hidden");
+        toggleBtn.textContent = "詳細を見る ▼";
+      }
+    });
+  }
+
+  // 大学名クリックで検索フィルター選択
+  const universityTag = card.querySelector(".university-tag");
+  if (universityTag) {
+    universityTag.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const uniEl = document.getElementById("university");
+      if (uniEl) {
+        uniEl.value = university;
+        onSearch();
+        // 検索エリアまでスクロール
+        document.getElementById("search-area")?.scrollIntoView({ behavior: "smooth" });
+      }
+    });
   }
 
   return card;
@@ -492,7 +599,7 @@ function loadHistory() {
   renderHistory();
 }
 
-function renderFavorites() {
+async function renderFavorites() {
   const list = document.getElementById("favorites-list");
   if (!list) return;
   list.innerHTML = "";
@@ -504,10 +611,13 @@ function renderFavorites() {
   }
 
   const all = getAllEvents();
-  favs.forEach((id) => {
+  for (const id of favs) {
     const ev = all.find((x) => x.id === id);
-    if (ev) list.appendChild(createEventCard(ev));
-  });
+    if (ev) {
+      const card = await createEventCard(ev);
+      list.appendChild(card);
+    }
+  }
 }
 
 // ============================
