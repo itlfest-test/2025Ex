@@ -448,7 +448,7 @@ async function renderResults(list) {
 }
 
 // ============================
-// カード生成（要約版）
+// カード生成（要約版 → カードクリックで別ページ遷移版）
 // ============================
 async function createEventCard(ev) {
   const card = document.createElement("article");
@@ -457,7 +457,7 @@ async function createEventCard(ev) {
 
   const favs = loadFavoritesArray();
   const isFav = favs.includes(ev.id);
-  
+
   const dateTimeStr = formatDateTime(evStartDateTime(ev), evEndDateTime(ev));
   const placeStr = evPlace(ev);
   const fullDescription = evDescription(ev);
@@ -466,62 +466,49 @@ async function createEventCard(ev) {
   // 要約を生成（非同期）
   const summary = await getSummary(ev.id, fullDescription);
 
+  // ※詳細展開UIは削除
   card.innerHTML = `
-    <button class="fav-btn ${isFav ? "active" : ""}" data-id="${ev.id}" aria-label="お気に入り">
-      ⭐
-    </button>
+    <button class="fav-btn ${isFav ? "active" : ""}" data-id="${ev.id}" aria-label="お気に入り">⭐</button>
     <h4>${escapeHtml(evTitle(ev))}</h4>
     <p class="muted event-summary">${escapeHtml(summary)}</p>
-    <div class="event-details hidden">
-      <p><strong>詳細：</strong>${escapeHtml(fullDescription)}</p>
-      ${dateTimeStr ? `<p><strong>日時：</strong>${escapeHtml(dateTimeStr)}</p>` : ''}
-      ${placeStr ? `<p><strong>場所：</strong>${escapeHtml(placeStr)}</p>` : ''}
-    </div>
-    <button class="toggle-details-btn">詳細を見る ▼</button>
     <div class="card-meta">
-      <span class="university-tag" style="cursor: pointer; text-decoration: underline;">${escapeHtml(university)}</span> / ${escapeHtml(evCategory(ev))} / ${escapeHtml(evField(ev))}
+      <span class="university-tag" style="cursor: pointer; text-decoration: underline;">
+        ${escapeHtml(university)}
+      </span> /
+      ${escapeHtml(evCategory(ev))} /
+      ${escapeHtml(evField(ev))}
     </div>
   `;
 
-  // お気に入りボタン
+  // ============================
+  // 🟣 カードクリック → event.html?id=◯◯ へ遷移
+  // ============================
+  card.addEventListener("click", () => {
+    window.location.href = `event.html?id=${ev.id}`;
+  });
+
+  // ============================
+  // ⭐ お気に入りボタン（カード遷移を阻止）
+  // ============================
   const favBtn = card.querySelector(".fav-btn");
   if (favBtn) {
     favBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
+      e.stopPropagation(); // ★ カード遷移をブロック
       toggleFavorite(ev);
     });
   }
 
-  // 詳細表示切り替え
-  const toggleBtn = card.querySelector(".toggle-details-btn");
-  const detailsDiv = card.querySelector(".event-details");
-  const summaryP = card.querySelector(".event-summary");
-  
-  if (toggleBtn && detailsDiv && summaryP) {
-    toggleBtn.addEventListener("click", () => {
-      const isHidden = detailsDiv.classList.contains("hidden");
-      if (isHidden) {
-        detailsDiv.classList.remove("hidden");
-        summaryP.classList.add("hidden");
-        toggleBtn.textContent = "要約を見る ▲";
-      } else {
-        detailsDiv.classList.add("hidden");
-        summaryP.classList.remove("hidden");
-        toggleBtn.textContent = "詳細を見る ▼";
-      }
-    });
-  }
-
-  // 大学名クリックで検索フィルター選択
+  // ============================
+  // 🎓 大学名クリック（遷移阻止して検索フィルタ適用）
+  // ============================
   const universityTag = card.querySelector(".university-tag");
   if (universityTag) {
     universityTag.addEventListener("click", (e) => {
-      e.stopPropagation();
+      e.stopPropagation(); // ★ カード遷移をブロック
       const uniEl = document.getElementById("university");
       if (uniEl) {
         uniEl.value = university;
         onSearch();
-        // 検索エリアまでスクロール
         document.getElementById("search-area")?.scrollIntoView({ behavior: "smooth" });
       }
     });
