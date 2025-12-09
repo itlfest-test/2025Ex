@@ -426,9 +426,9 @@ function onClear() {
 }
 
 // ============================
-// 📄 結果表示
+// 📄 結果表示（async対応版）
 // ============================
-function renderResults(list) {
+async function renderResults(list) {
   const area = document.getElementById("results");
   const noData = document.getElementById("no-results");
   if (!area) return;
@@ -441,7 +441,10 @@ function renderResults(list) {
   }
   if (noData) noData.hidden = true;
 
-  list.forEach((ev) => area.appendChild(createEventCard(ev)));
+  for (const ev of list) {
+    const card = await createEventCard(ev); // ← ここが重要
+    area.appendChild(card);
+  }
 }
 
 // ============================
