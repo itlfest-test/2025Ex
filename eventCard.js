@@ -1,4 +1,3 @@
-// event_cards.js
 // ============================
 // カード生成（要約版 + 画像プレースホルダー対応）
 // ============================
@@ -84,42 +83,7 @@ async function createEventCard(ev) {
 }
 
 
-  // 詳細表示切り替え
-  const toggleBtn = card.querySelector(".toggle-details-btn");
-  const detailsDiv = card.querySelector(".event-details");
-  const summaryP = card.querySelector(".event-summary");
-
-  if (toggleBtn && detailsDiv && summaryP) {
-    toggleBtn.addEventListener("click", () => {
-      const isHidden = detailsDiv.classList.contains("hidden");
-      if (isHidden) {
-        detailsDiv.classList.remove("hidden");
-        summaryP.classList.add("hidden");
-        toggleBtn.textContent = "要約を見る ▲";
-      } else {
-        detailsDiv.classList.add("hidden");
-        summaryP.classList.remove("hidden");
-        toggleBtn.textContent = "詳細を見る ▼";
-      }
-    });
-  }
-
-  // 大学名クリックで検索フィルター適用
-  const universityTag = card.querySelector(".university-tag");
-  if (universityTag) {
-    universityTag.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const uniEl = document.getElementById("university");
-      if (uniEl) {
-        uniEl.value = university;
-        onSearch();
-        document.getElementById("search-area")?.scrollIntoView({ behavior: "smooth" });
-      }
-    });
-  }
-
-  return card;
-}
+  
 
 function escapeHtml(str) {
   if (!str && str !== 0) return "";
